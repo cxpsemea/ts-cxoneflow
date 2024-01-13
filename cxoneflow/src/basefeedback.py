@@ -1,6 +1,6 @@
 
 from config import config
-from cxproperties import cxproperties
+from .cxproperties import cxproperties
 
 
 # Abstract base class, must override

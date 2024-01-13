@@ -5,10 +5,10 @@ from datetime import datetime
 from urllib import parse
 from cxloghandler import cxlogger
 from config import config
-from basefeedback import basefeedback
-from cxproperties import cxproperties
-from cxjiraapicaller import cxjiraapi
-from cxjiraproperties import jiraproperties 
+from .basefeedback import basefeedback
+from .cxproperties import cxproperties
+from .cxjiraapicaller import cxjiraapi
+from .cxjiraproperties import jiraproperties 
 
 
 # Constants

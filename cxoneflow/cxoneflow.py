@@ -19,6 +19,11 @@ class cxoneflow(baserunner) :
 
     # Overriding
     def printhelp(self) :
+        print( '============================================================' )
+        print( 'Checkmarx Results Processor' )
+        print( '© Checkmarx. All rights reserved.' )
+        print( 'Version: ' + self.config.value('version') )
+        print( '============================================================' )
         return
 
 
