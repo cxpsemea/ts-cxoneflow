@@ -97,7 +97,7 @@ jobs:
 
   # Ubuntu builds job
   build_ubuntu:
-    needs: [process_version] 
+    needs: [process_version,build_windows] 
     runs-on: ubuntu-latest
     name: Ubuntu Builds
     env:
@@ -129,7 +129,7 @@ jobs:
   # Macos builds job
   # To activate when signing is available
   # build_macos:
-  #   needs: [process_version] 
+  #   needs: [process_version,build_ubuntu] 
   #   runs-on: macos-latest
   #   name: Macos Builds
   #   env:
