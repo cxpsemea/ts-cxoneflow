@@ -6,7 +6,7 @@ from cxloghandler import cxlogger
 from config import config
 from baserunner import baserunner
 from cxoneconn import cxoneconn
-from cxproperties import cxproperties
+from .cxproperties import cxproperties
 
 
 
