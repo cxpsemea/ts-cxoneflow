@@ -1,4 +1,3 @@
-
 cx-flow:
   #bug-tracker: Json
   bug-tracker: JIRA
@@ -114,4 +113,3 @@ jira:
       name: category
       jira-field-name: Epic Name
       jira-field-type: text
-
