@@ -6,9 +6,9 @@ from datetime import datetime
 from cxloghandler import cxlogger
 from baserunner import baserunner
 from cxoneconn import cxoneconn
-from cxproperties import cxproperties
-from cxprocessscan import cxprocessor
-from cxjirafeedback import jirafeedback
+from src.cxproperties import cxproperties
+from src.cxprocessscan import cxprocessor
+from src.cxjirafeedback import jirafeedback
 
 
 # Accepted bug trackers
