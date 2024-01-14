@@ -16,6 +16,7 @@ from .cxjiraproperties import jiraproperties
 HTML_CRLF: str                          = '\r\n'
 
 JIRA_CX_PRODUCT                         = 'CXONE'
+JIRA_CX_LEGACY                          = 'CX'
 
 JIRA_ISSUE_LABEL_SAST: str              = 'scanner:SAST'
 JIRA_ISSUE_LABEL_SCA: str               = 'scanner:SCA'
@@ -80,7 +81,7 @@ class jirafeedback(basefeedback) :
         # # Get existing tickets for scanner
         # jiratickets = []
         # Construct jql
-        jqlex = self.jiraparams.labeltracker + ' = ' + JIRA_CX_PRODUCT
+        jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + JIRA_CX_LEGACY + ' )'
         if scanner == 'sast' :
             jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + JIRA_ISSUE_LABEL_SAST
         elif scanner == 'sca' :

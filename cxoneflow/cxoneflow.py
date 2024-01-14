@@ -36,7 +36,8 @@ class cxoneflow(baserunner) :
         # Load configurations
         cxparams = cxproperties( self.config )
         # Init log and verbose
-        cxlogger.activate( verbose = self.verbose, logging = True, debug = False )
+        # cxlogger.activate( verbose = self.verbose, logging = True, debug = False )
+        cxlogger.activate( verbose = True, logging = True, debug = False )
         # To compute duration
         dtini = datetime.now()
 
