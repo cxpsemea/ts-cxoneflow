@@ -111,14 +111,84 @@ class cxoneflow(baserunner) :
             has_results = runner.processscan()
 
             if has_results :
+                feeder      = None
                 scandata    = runner.scan
                 counters    = runner.counters
                 results     = runner.results
 
                 if results['sast'] or results['sca'] or results['kics'] :
+                    # Create tickets ?
                     if cxparams.bug_tracker == 'jira' :
                         feeder = jirafeedback( self.config, cxparams, scandata, results )
-                    feeder.processfeedback()
+                    if feeder :
+                        feeder.processfeedback()
+                    else :
+                        cxlogger.verbose( 'SKIPPED: no supported bug-tracker found' )
+                    # Check thresholds/break build ?
+                    break_build = False
+                    if cxparams.has_thresholds() :
+
+                        # Evaluate SAST
+                        if cxparams.sast_threshold_new and counters['sast']['New'] >= cxparams.sast_threshold_new :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SAST New ' + str(counters['sast']['New']) + ' reached ' + str(cxparams.sast_threshold_new ) + ' limit!' )
+                        if cxparams.sast_threshold_critical and counters['sast']['Critical'] >= cxparams.sast_threshold_critical :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SAST Critical ' + str(counters['sast']['Critical']) + ' reached ' + str(cxparams.sast_threshold_critical ) + ' limit!' )
+                        if cxparams.sast_threshold_high and counters['sast']['High'] >= cxparams.sast_threshold_high :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SAST High ' + str(counters['sast']['High']) + ' reached ' + str(cxparams.sast_threshold_high ) + ' limit!' )
+                        if cxparams.sast_threshold_medium and counters['sast']['Medium'] >= cxparams.sast_threshold_medium :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SAST Medium ' + str(counters['sast']['Medium']) + ' reached ' + str(cxparams.sast_threshold_medium ) + ' limit!' )
+                        if cxparams.sast_threshold_low and counters['sast']['Low'] >= cxparams.sast_threshold_low :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SAST Low ' + str(counters['sast']['Low']) + ' reached ' + str(cxparams.sast_threshold_low ) + ' limit!' )
+
+                        # Evaluate KICS
+                        if cxparams.kics_threshold_new and counters['kics']['New'] >= cxparams.kics_threshold_new :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, KICS New ' + str(counters['kics']['New']) + ' reached ' + str(cxparams.kics_threshold_new ) + ' limit!' )
+                        if cxparams.kics_threshold_critical and counters['kics']['Critical'] >= cxparams.kics_threshold_critical :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, KICS Critical ' + str(counters['kics']['Critical']) + ' reached ' + str(cxparams.kics_threshold_critical ) + ' limit!' )
+                        if cxparams.kics_threshold_high and counters['kics']['High'] >= cxparams.kics_threshold_high :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, KICS High ' + str(counters['kics']['High']) + ' reached ' + str(cxparams.kics_threshold_high ) + ' limit!' )
+                        if cxparams.kics_threshold_medium and counters['kics']['Medium'] >= cxparams.kics_threshold_medium :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, KICS Medium ' + str(counters['kics']['Medium']) + ' reached ' + str(cxparams.kics_threshold_medium ) + ' limit!' )
+                        if cxparams.kics_threshold_low and counters['kics']['Low'] >= cxparams.kics_threshold_low :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, KICS Low ' + str(counters['kics']['Low']) + ' reached ' + str(cxparams.kics_threshold_low ) + ' limit!' )
+
+                        # Evaluate SCA
+                        if cxparams.sca_threshold_new and counters['sca']['New'] >= cxparams.sca_threshold_new :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA New ' + str(counters['sca']['New']) + ' reached ' + str(cxparams.sca_threshold_new ) + ' limit!' )
+                        if cxparams.sca_threshold_critical and counters['sca']['Critical'] >= cxparams.sca_threshold_critical :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA Critical ' + str(counters['sca']['Critical']) + ' reached ' + str(cxparams.sca_threshold_critical ) + ' limit!' )
+                        if cxparams.sca_threshold_high and counters['sca']['High'] >= cxparams.sca_threshold_high :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA High ' + str(counters['sca']['High']) + ' reached ' + str(cxparams.sca_threshold_high ) + ' limit!' )
+                        if cxparams.sca_threshold_medium and counters['sca']['Medium'] >= cxparams.sca_threshold_medium :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA Medium ' + str(counters['sca']['Medium']) + ' reached ' + str(cxparams.sca_threshold_medium ) + ' limit!' )
+                        if cxparams.sca_threshold_low and counters['sca']['Low'] >= cxparams.sca_threshold_low :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA Low ' + str(counters['sca']['Low']) + ' reached ' + str(cxparams.sca_threshold_low ) + ' limit!' )
+                        if cxparams.sca_threshold_score and counters['sca']['CvsScore'] >= cxparams.sca_threshold_score :
+                            break_build = True
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, SCA Highest CVSS Score ' + str(counters['sca']['CvsScore']) + ' reached ' + str(cxparams.sca_threshold_score ) + ' limit, package "' + counters['sca']['CvsScorePackage'] + '"!' )
+
+                    if break_build :
+                        if cxparams.break_build :
+                            resultstatus = 10
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, breaking build with exit code 10.' )
+                        else: 
+                            cxlogger.verbose( 'THRESHOLD VIOLATION, breaking build is disabled!' )
+                        
                 else :
                     cxlogger.verbose( 'SKIPPED: no elegible results found to process' )
             else :

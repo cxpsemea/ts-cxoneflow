@@ -28,6 +28,12 @@ cx-flow:
   - sca
   - sast
   - kics
+  # thresholds:
+  # - new: 1
+  # - critical: 2
+  # - high: 10
+  # - medium: 50
+  # - low: 100
    
 cxone:
   url: https://eu.ast.checkmarx.net
@@ -70,6 +76,14 @@ sca:
   filter-score: 9.0
   # filter-dependency-type: Direct
   # filter-ignore-dev-test: false
+  # filter-policy-violation: true
+  # thresholds:
+  # - new: 1
+  # - critical: 2
+  # - high: 10
+  # - medium: 50
+  # - low: 100
+  # thresholds-score: 9.0
 
 kics:  
   filter-severity:
@@ -87,6 +101,12 @@ kics:
   # filter-category:
   # - APT-GET Not Avoiding Additional Packages
   # - Missing User Instruction
+  # thresholds:
+  # - new: 1
+  # - critical: 2
+  # - high: 10
+  # - medium: 50
+  # - low: 100
  
 jira:
   url: [your-jira-url]

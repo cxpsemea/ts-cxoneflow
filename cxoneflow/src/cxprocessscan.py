@@ -201,8 +201,12 @@ class cxprocessor(baserunner) :
                 if elegible :
                     package = next( filter( lambda el: el['packageId'] == result['data']['packageIdentifier'], self.__sca_packages ), None )
                     if package :
+                        # Check filter package type
                         if self.cxparams.sca_filter_ignore_dev_test and ( package['isDev'] or package['isTest'] ) :
                             elegible = False
+                        # Check filter policy violation
+                        if elegible and self.cxparams.sca_filter_policyviolation :
+                            elegible = package['isViolatingPolicy']
                     else :
                         elegible = False
             else :
@@ -227,6 +231,12 @@ class cxprocessor(baserunner) :
                     counters['Low'] += 1
                 elif str(result['severity']).lower() == 'info' :
                     counters['Info'] += 1
+
+                if scanner == 'sca' :
+                    score =  result['vulnerabilityDetails']['cvssScore']
+                    if score > counters['CvsScore'] :
+                        counters['CvsScore']        = score
+                        counters['CvsScorePackage'] = result['data']['packageIdentifier']
 
                 # Aggergate
                 if self.__aggergators[scanner] == None :
@@ -385,7 +395,7 @@ class cxprocessor(baserunner) :
 
 
             # Init counters
-            counterrec = { 'New': 0, 'Recurrent': 0, 'Critical': 0, 'High': 0, 'Medium': 0, 'Low': 0, 'Info': 0 }
+            counterrec = { 'New': 0, 'Recurrent': 0, 'Critical': 0, 'High': 0, 'Medium': 0, 'Low': 0, 'Info': 0, 'CvsScore': 0, 'CvsScorePackage': None }
             self.__counters['sast']             = counterrec
             self.__counters['sca']              = counterrec
             self.__counters['kics']             = counterrec
