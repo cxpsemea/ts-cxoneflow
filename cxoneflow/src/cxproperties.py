@@ -29,6 +29,16 @@ class cxproperties(object) :
         self.mitre_url                  = config.value('cx-flow.mitre-url')     #mitre-url: https://cwe.mitre.org/data/definitions/%s.html
         self.wiki_url                   = config.value('cx-flow.wiki-url')      #wiki-url: https://custodela.atlassian.net/wiki/spaces/AS/pages/79462432/Remediation+Guidance
 
+        # Global settings
+        # ---------------
+        if config.haskey('cx-flow.break-build') :
+            self.break_build            = config.value('cx-flow.break-build')
+        else :
+            self.break_build            = True
+        # This comes from command line
+        if  config.haskey('cx-flow.disable-break-build') :
+            self.break_build            = False
+
         # Global filters 
         # --------------
         self.filter_scanners            = None
@@ -40,12 +50,25 @@ class cxproperties(object) :
         self.sast_filter_state          = None
         self.sast_filter_categories     = None
         self.sast_filter_cwes           = None
+        # Thresholds
+        self.sast_threshold_new         = None
+        self.sast_threshold_critical    = None
+        self.sast_threshold_high        = None
+        self.sast_threshold_medium      = None
+        self.sast_threshold_low         = None
+        
 
         # Kics filters
         # ------------
         self.kics_filter_severities     = None
         self.kics_filter_state          = None
         self.kics_filter_categories     = None
+        # Thresholds
+        self.kics_threshold_new         = None
+        self.kics_threshold_critical    = None
+        self.kics_threshold_high        = None
+        self.kics_threshold_medium      = None
+        self.kics_threshold_low         = None
 
         # SCA filters
         # -----------
@@ -54,16 +77,14 @@ class cxproperties(object) :
         self.sca_filter_cvsscore        = None
         self.sca_filter_dependency_type = None
         self.sca_filter_ignore_dev_test = None
-
-#   filter-policy-violation: true
-#   //If User want to check for Direct Dependency specifically below tag can be used and default value is All. 
-#   filter-dependency-type: Direct
-#   //Based on threshold severity it will break build even for Direct Dependency.
-#   thresholds-Severity:
-#     HIGH: 1
-#     MEDIUM: 150
-#     LOW: 1        
-
+        self.sca_filter_policyviolation = None
+        # Thresholds
+        self.sca_threshold_new          = None
+        self.sca_threshold_score        = None
+        self.sca_threshold_critical     = None
+        self.sca_threshold_high         = None
+        self.sca_threshold_medium       = None
+        self.sca_threshold_low          = None
 
         # Have GLOBAL branch filters ?
         if config.haskey('cx-flow.branches') :
@@ -246,9 +267,6 @@ class cxproperties(object) :
                 if len(self.kics_filter_categories) == 0 :
                     self.kics_filter_categories = None
 
-
-
-
         # Have SCA severity filters ?
         # CRITICAL
         # HIGH
@@ -325,6 +343,91 @@ class cxproperties(object) :
                 self.sca_filter_ignore_dev_test = True
             else :
                 self.sca_filter_ignore_dev_test = None
-        
 
-#   filter-dependency-type: Direct
+        # Have SCA dependency violation filter ?
+        if config.haskey('sca.filter-policy-violation') :
+            self.sca_filter_policyviolation = config.value('sca.filter-policy-violation')
+
+        # Have SAST thresholds ?
+        
+        aux = None
+        if config.haskey('cx-flow.thresholds') :
+            aux = config.value('cx-flow.thresholds')
+        if aux and (type(aux) is list) and len(aux) > 0 :
+            for ts in aux :
+                tskey   = str(list(dict(ts).keys())[0]).lower()
+                tsval   = ts[tskey] 
+                if tsval and int(tsval) > 0 :
+                    if tskey == 'new' :
+                        self.sast_threshold_new         = int(tsval)
+                    elif tskey == 'critical' :
+                        self.sast_threshold_critical    = int(tsval)
+                    elif tskey == 'high' : 
+                        self.sast_threshold_high        = int(tsval)
+                    elif tskey == 'medium' :
+                        self.sast_threshold_medium      = int(tsval)
+                    elif tskey == 'low' :
+                        self.sast_threshold_low         = int(tsval)
+
+        # Have KICS thresholds ?
+        aux = None
+        if config.haskey('kics.thresholds') :
+            aux = config.value('kics.thresholds')
+        if aux and (type(aux) is list) and len(aux) > 0 :
+            for ts in aux :
+                tskey   = str(list(dict(ts).keys())[0]).lower()
+                tsval   = ts[tskey] 
+                if tsval and int(tsval) > 0 :
+                    if tskey == 'new' :
+                        self.kics_threshold_new         = int(tsval)
+                    elif tskey == 'critical' :
+                        self.kics_threshold_critical    = int(tsval)
+                    elif tskey == 'high' : 
+                        self.kics_threshold_high        = int(tsval)
+                    elif tskey == 'medium' :
+                        self.kics_threshold_medium      = int(tsval)
+                    elif tskey == 'low' :
+                        self.kics_threshold_low         = int(tsval)
+
+
+        # Have SCA thresholds ?
+        if config.haskey('sca.thresholds-score') :
+            value = config.value('sca.thresholds-score')
+            if (type(value) is int) or (type(value) is float) :      
+                self.sca_threshold_score      = value
+            else :
+                self.sca_threshold_score      = None
+        if self.sca_threshold_score :
+            if self.sca_threshold_score > 10.0 :
+                self.sca_threshold_score = 10.0
+
+        aux = None
+        if config.haskey('sca.thresholds') :
+            aux = config.value('sca.thresholds')
+        elif config.haskey('sca.thresholds-severity') :
+            aux = config.value('sca.thresholds-severity')
+        if aux and (type(aux) is list) and len(aux) > 0 :
+            for ts in aux :
+                tskey   = str(list(dict(ts).keys())[0]).lower()
+                tsval   = ts[tskey] 
+                if tsval and int(tsval) > 0 :
+                    if tskey == 'new' :
+                        self.sca_threshold_new          = int(tsval)
+                    elif tskey == 'critical' :
+                        self.sca_threshold_critical     = int(tsval)
+                    elif tskey == 'high' : 
+                        self.sca_threshold_high         = int(tsval)
+                    elif tskey == 'medium' :
+                        self.sca_threshold_medium       = int(tsval)
+                    elif tskey == 'low' :
+                        self.sca_threshold_low          = int(tsval)
+
+    def has_thresholds(self) :
+        if self.sast_threshold_new or self.sast_threshold_critical or self.sast_threshold_high or self.sast_threshold_medium or self.sast_threshold_low or \
+            self.kics_threshold_new or self.kics_threshold_critical or self.kics_threshold_high or self.kics_threshold_medium or self.kics_threshold_low or \
+            self.sca_threshold_new or self.sca_threshold_score or self.sca_threshold_critical or self.sca_threshold_high or self.sca_threshold_medium or self.sca_threshold_low :
+            return True
+        else :
+            return False
+
+
