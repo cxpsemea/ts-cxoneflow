@@ -91,16 +91,16 @@ class jirafeedback(basefeedback) :
         # From params, Namespace/Repo/Branch provided
         
         if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
         # From params, only application and repo provided
         elif self.cxparams.application and self.cxparams.repository  :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.applabelprefix + ':' + self.cxparams.application
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
         # From params, only application
         elif self.cxparams.application :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.jiraparams.applabelprefix + ':' + self.cxparams.application
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
         # Get it
         return self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
 
