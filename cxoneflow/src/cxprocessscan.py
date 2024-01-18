@@ -439,7 +439,7 @@ class cxprocessor(baserunner) :
                 graphql = tql + '"take":' + str(limit) + ',"skip":' + str(skip) + '} }'
                 # Go for it
                 data = self.conn.cxone.post( '/api/sca/graphql/graphql', body = graphql )
-                while ( data and len( data['data']['packagesRows']['items'] ) > 0 ) :
+                while ( data and data['data'] and data['data']['packagesRows'] and data['data']['packagesRows']['items'] and len( data['data']['packagesRows']['items'] ) > 0 ) :
                     counter += len(data['data']['packagesRows']['items'])
                     cxlogger.verbose( '- Processing ' + str(counter) + ' sca libraries' )
                     self.__sca_packages.extend( data['data']['packagesRows']['items'] )
