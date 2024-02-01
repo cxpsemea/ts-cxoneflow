@@ -119,59 +119,60 @@ class jiraproperties(object) :
 
     def processfields(self) :
         self.fields = []
-        # Process config fields
-        for field in self.__fields :
-            cxtype: str         = field.get('type')
-            cxname: str         = field.get('name')
-            jiraname: str       = None
-            jiratype: str       = field.get('jira-field-type')
-            jiralabel: str      = field.get('jira-field-name')
-            jiradefault: str    = field.get('jira-default-value')
-            jiraskip: str       = field.get('skip-update')
-            jiraoffset: int     = int(field.get('offset', 0))
-            jirabasetype: str   = None
-            jirasystype: str    = None
-            jiraitemtype: str   = None
-            jiraoperations      = None
-            # Check type
-            if not (cxtype.lower() in [ 'static', 'cx', 'result', 'sca-result', 'sca-results', 'kics-result', 'kics-results' ]) :
-                raise Exception( 'Unsupported field type "' + cxtype + '" in fields list' )
-            # Check name
-            if not cxname :
-                raise Exception( 'A field name was not supplied' )
-            # if cxtype.lower() in [ 'result', 'sca-result', 'sca-results', 'kics-result', 'kics-results' ] :
-            #     if not (cxname.lower() in [ 'application', 'project', 'namespace', 'repo-name', 'repo-url', 'branch', 
-            #                 'severity', 'category', 'cwe', 'recommendation', 'loc', 'issue-link', 'filename', 'language', 'similarity-id' ]) :
-            #         raise Exception( 'Invalid field name "' + cxname + '" supplied' )
-            # Check jira name
-            jira_field = next( filter( lambda el: el['name'] == jiralabel or el['key'] == jiralabel, self.issuefields ), None )
-            # if not jira_field and jiratype not in ['label','security','priority'] :
-            if not jira_field and jiratype not in ['label','security'] :
-                raise Exception( 'Jira issue field "' + jiraname + '" was not found for issue type "' + self.issuetype + '"' )
-            # Check jira base type
-            if jira_field :
-                jiraname        = jira_field.get('key')
-                jiralabel       = jira_field.get('name')
-                jiraoperations  = jira_field.get('operations')
-                jirabasetype    = jira_field['schema'].get('type')
-                jirasystype     = jira_field['schema'].get('system')
-                jiraitemtype    = jira_field['schema'].get('items')
-            #     if jira_type != 'any' :
-            #         if not ( (jira_type and jira_type.lower() == jiratype.lower()) or (jira_syst and jira_syst.lower() == jiratype.lower()) ) :
-            #             raise Exception( 'Jira issue type "' + jiratype + '" is not valid for field "' + jiraname + '"' )
-            # Add to list
-            map = { 'type': cxtype.lower(),
-                    'name': cxname.lower(),
-                    'jiraname': jiraname,
-                    'jiratype': jiratype,
-                    'label': jiralabel,
-                    'default': jiradefault,
-                    'skipupdate': jiraskip, 
-                    'offset': jiraoffset,
-                    'basetype': jirabasetype,
-                    'systype': jirasystype,
-                    'itemstype': jiraitemtype,
-                    'operations': jiraoperations }
-            self.fields.append(map)
+        # Process config fields, if any
+        if self.__fields and len(self.__fields) > 0 :
+            for field in self.__fields :
+                cxtype: str         = field.get('type')
+                cxname: str         = field.get('name')
+                jiraname: str       = None
+                jiratype: str       = field.get('jira-field-type')
+                jiralabel: str      = field.get('jira-field-name')
+                jiradefault: str    = field.get('jira-default-value')
+                jiraskip: str       = field.get('skip-update')
+                jiraoffset: int     = int(field.get('offset', 0))
+                jirabasetype: str   = None
+                jirasystype: str    = None
+                jiraitemtype: str   = None
+                jiraoperations      = None
+                # Check type
+                if not (cxtype.lower() in [ 'static', 'cx', 'result', 'sca-result', 'sca-results', 'kics-result', 'kics-results' ]) :
+                    raise Exception( 'Unsupported field type "' + cxtype + '" in fields list' )
+                # Check name
+                if not cxname :
+                    raise Exception( 'A field name was not supplied' )
+                # if cxtype.lower() in [ 'result', 'sca-result', 'sca-results', 'kics-result', 'kics-results' ] :
+                #     if not (cxname.lower() in [ 'application', 'project', 'namespace', 'repo-name', 'repo-url', 'branch', 
+                #                 'severity', 'category', 'cwe', 'recommendation', 'loc', 'issue-link', 'filename', 'language', 'similarity-id' ]) :
+                #         raise Exception( 'Invalid field name "' + cxname + '" supplied' )
+                # Check jira name
+                jira_field = next( filter( lambda el: el['name'] == jiralabel or el['key'] == jiralabel, self.issuefields ), None )
+                # if not jira_field and jiratype not in ['label','security','priority'] :
+                if not jira_field and jiratype not in ['label','security'] :
+                    raise Exception( 'Jira issue field "' + jiraname + '" was not found for issue type "' + self.issuetype + '"' )
+                # Check jira base type
+                if jira_field :
+                    jiraname        = jira_field.get('key')
+                    jiralabel       = jira_field.get('name')
+                    jiraoperations  = jira_field.get('operations')
+                    jirabasetype    = jira_field['schema'].get('type')
+                    jirasystype     = jira_field['schema'].get('system')
+                    jiraitemtype    = jira_field['schema'].get('items')
+                #     if jira_type != 'any' :
+                #         if not ( (jira_type and jira_type.lower() == jiratype.lower()) or (jira_syst and jira_syst.lower() == jiratype.lower()) ) :
+                #             raise Exception( 'Jira issue type "' + jiratype + '" is not valid for field "' + jiraname + '"' )
+                # Add to list
+                map = { 'type': cxtype.lower(),
+                        'name': cxname.lower(),
+                        'jiraname': jiraname,
+                        'jiratype': jiratype,
+                        'label': jiralabel,
+                        'default': jiradefault,
+                        'skipupdate': jiraskip, 
+                        'offset': jiraoffset,
+                        'basetype': jirabasetype,
+                        'systype': jirasystype,
+                        'itemstype': jiraitemtype,
+                        'operations': jiraoperations }
+                self.fields.append(map)
 
 
