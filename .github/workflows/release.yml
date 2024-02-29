@@ -97,7 +97,7 @@ jobs:
 
   # Ubuntu builds job
   build_ubuntu:
-    needs: [process_version,build_windows] 
+    needs: process_version 
     runs-on: ubuntu-latest
     name: Ubuntu Builds
     env:
@@ -128,8 +128,8 @@ jobs:
 
   # Alpine builds job
   build_alpine:
-    needs: [process_version,build_windows] 
-    runs-on: alpine-latest
+    needs: process_version
+    runs-on: ubuntu-latest
     name: Alpine Builds
     env:
       PS_VERSION: ${{needs.process_version.outputs.VERSION_TAG}}
@@ -137,28 +137,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-           fetch-depth: 1
+          fetch-depth: 1
+      - name: Setup latest Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        with:
+          packages: >
+            bash
+            binutils
+            python3
+            py3-pip
       - name: Install Python
         run: |
-          apk add --update --no-cache bash binutils python3 py3-pip && ln -sf python3 /usr/bin/python
+          cat /etc/alpine-release
+          uname -m
+          ln -sf python3 /usr/bin/python
+        shell: alpine.sh --root {0}
+      - name: Build binaries
           python -m venv ./
           . ./bin/activate
           pip install -r .build/build_requirements.txt
-          pip install -r .build/requirements.txt
-          deactivate
-      - name: Build binaries
-        run: |
+          pip install -r .build/requirements.txt 
           . ./bin/activate
-          .build/make-version.sh ${{env.PS_VERSION}}
-          .build/build-alpine.sh
-          mkdir -p /tmp/build
-          mv .dist/*.tar.gz /tmp/build
+          bash .build/make-version.sh ${{env.PS_VERSION}}
+          bash .build/build-alpine.sh
           deactivate
+        shell: alpine.sh {0}
       - name: Deploy artifacts
         # See: https://github.com/marketplace/actions/create-release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: /tmp/build/*.tar.gz
+          artifacts: .dist/*.tar.gz
           name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
