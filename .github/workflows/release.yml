@@ -128,7 +128,7 @@ jobs:
 
   # Alpine builds job
   build_alpine:
-    needs: [process_version,build_ubuntu] 
+    needs: [process_version,build_windows] 
     runs-on: alpine-latest
     name: Alpine Builds
     env:
