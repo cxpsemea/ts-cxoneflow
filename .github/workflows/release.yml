@@ -153,6 +153,7 @@ jobs:
           ln -sf python3 /usr/bin/python
         shell: alpine.sh --root {0}
       - name: Build binaries
+        run: |
           python -m venv ./
           . ./bin/activate
           pip install -r .build/build_requirements.txt
