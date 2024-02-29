@@ -97,7 +97,7 @@ jobs:
 
   # Ubuntu builds job
   build_ubuntu:
-    needs: [process_version,build_windows] 
+    needs: process_version 
     runs-on: ubuntu-latest
     name: Ubuntu Builds
     env:
@@ -127,13 +127,17 @@ jobs:
           allowUpdates: true
 
   # Alpine builds job
-   build_alpine:
+  build_alpine:
     needs: process_version
     runs-on: ubuntu-latest
     name: Alpine Builds
     env:
       PS_VERSION: ${{needs.process_version.outputs.VERSION_TAG}}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+          with:
+           fetch-depth: 1
       - name: Setup latest Alpine Linux
         uses: jirutka/setup-alpine@v1
         with:
@@ -142,10 +146,6 @@ jobs:
             binutils
             python3
             py3-pip
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-           fetch-depth: 1
       - name: Install Python
         run: |
           cat /etc/alpine-release
@@ -160,15 +160,13 @@ jobs:
           . ./bin/activate
           bash .build/make-version.sh ${{env.PS_VERSION}}
           bash .build/build-alpine.sh
-          mkdir -p /tmp/build
-          mv .dist/*.tar.gz /tmp/build
           deactivate
         shell: alpine.sh {0}
       - name: Deploy artifacts
         # See: https://github.com/marketplace/actions/create-release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: /tmp/build/*.tar.gz
+          artifacts: .dist/*.tar.gz
           name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
