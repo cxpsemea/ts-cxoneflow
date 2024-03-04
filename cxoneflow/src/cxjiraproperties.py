@@ -148,7 +148,7 @@ class jiraproperties(object) :
                 jira_field = next( filter( lambda el: el['name'] == jiralabel or el['key'] == jiralabel, self.issuefields ), None )
                 # if not jira_field and jiratype not in ['label','security','priority'] :
                 if not jira_field and jiratype not in ['label','security'] :
-                    raise Exception( 'Jira issue field "' + jiraname + '" was not found for issue type "' + self.issuetype + '"' )
+                    raise Exception( 'Jira issue field "' + str(jiralabel) + '" was not found for issue type "' + str(self.issuetype) + '"' )
                 # Check jira base type
                 if jira_field :
                     jiraname        = jira_field.get('key')

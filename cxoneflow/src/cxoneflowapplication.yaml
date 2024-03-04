@@ -128,8 +128,8 @@ jira:
     - In Progress
   closed-status:
     - Done
-  fields:
-    - type: result
-      name: category
-      jira-field-name: Epic Name
-      jira-field-type: text
+  # fields:
+  #   - type: result
+  #     name: category
+  #     jira-field-name: Epic Name
+  #     jira-field-type: text
