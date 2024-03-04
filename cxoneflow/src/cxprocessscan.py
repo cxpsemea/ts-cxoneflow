@@ -271,16 +271,30 @@ class cxprocessor(baserunner) :
                         self.__aggergators[scanner].append( agg )
                     elif len(agg['results']) > 0 :
                         agg['severity'] = self.__highestseverity( agg['severity'], result['severity'] ) 
-                    res = { 'line': result['data']['nodes'][0]['line'],
-                            'column': result['data']['nodes'][0]['column'], 
-                            'domtype': result['data']['nodes'][0]['domType'], 
-                            'methodline': result['data']['nodes'][0]['methodLine'], 
-                            'resulthash': result['data']['resultHash'],
-                            'similarityid': result['similarityId'],
-                            'state': result['state'],
-                            'severity': result['severity'],
-                            'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
-                            }
+                        
+                    # Handling "special" xml nodes, which do not contain line/column number in nodes
+                    if 'line' in result['data']['nodes'][0] :
+                        res = { 'line': result['data']['nodes'][0]['line'],
+                                'column': result['data']['nodes'][0]['column'], 
+                                'domtype': result['data']['nodes'][0]['domType'], 
+                                'methodline': result['data']['nodes'][0]['methodLine'], 
+                                'resulthash': result['data']['resultHash'],
+                                'similarityid': result['similarityId'],
+                                'state': result['state'],
+                                'severity': result['severity'],
+                                'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
+                                }
+                    else :
+                        res = { 'line': 0,
+                                'column': 0,
+                                'domtype': result['data']['nodes'][0]['domType'], 
+                                'methodline': 0,
+                                'resulthash': result['data']['resultHash'],
+                                'similarityid': result['similarityId'],
+                                'state': result['state'],
+                                'severity': result['severity'],
+                                'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
+                                }
                     agg['results'].append(res)
                 elif scanner == 'kics' :
                     ref = str(result['data']['platform']) + ' ' + str(result['data']['queryName']) + ' ' + str(result['data']['fileName'])
