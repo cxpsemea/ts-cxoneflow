@@ -209,6 +209,12 @@ class cxprocessor(baserunner) :
                             elegible = package['isViolatingPolicy']
                     else :
                         elegible = False
+                # Retrieve exploitable path data
+                if elegible and self.cxparams.sca_filter_exploitablepath :
+                    if result['data']['exploitableMethods'] and len(result['data']['exploitableMethods']) > 0 :
+                        elegible = True
+                    else :
+                        elegible = False
             else :
                 elegible = False
 
@@ -274,27 +280,27 @@ class cxprocessor(baserunner) :
                         
                     # Handling "special" xml nodes, which do not contain line/column number in nodes
                     if 'line' in result['data']['nodes'][0] :
-                        res = { 'line': result['data']['nodes'][0]['line'],
-                                'column': result['data']['nodes'][0]['column'], 
-                                'domtype': result['data']['nodes'][0]['domType'], 
-                                'methodline': result['data']['nodes'][0]['methodLine'], 
-                                'resulthash': result['data']['resultHash'],
-                                'similarityid': result['similarityId'],
-                                'state': result['state'],
-                                'severity': result['severity'],
-                                'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
-                                }
+                        lline = result['data']['nodes'][0]['line']
                     else :
-                        res = { 'line': 0,
-                                'column': 0,
-                                'domtype': result['data']['nodes'][0]['domType'], 
-                                'methodline': 0,
-                                'resulthash': result['data']['resultHash'],
-                                'similarityid': result['similarityId'],
-                                'state': result['state'],
-                                'severity': result['severity'],
-                                'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
-                                }
+                        lline = 0
+                    if 'column' in result['data']['nodes'][0] :
+                        lcolumn = result['data']['nodes'][0]['column']
+                    else :
+                        lcolumn = 0
+                    if 'domType' in result['data']['nodes'][0] :
+                        ldomtype = result['data']['nodes'][0]['domType']
+                    else :
+                        ldomtype = ''
+                    res = { 'line': lline,
+                            'column': lcolumn,
+                            'domtype': ldomtype,
+                            'methodline': result['data']['nodes'][0]['methodLine'], 
+                            'resulthash': result['data']['resultHash'],
+                            'similarityid': result['similarityId'],
+                            'state': result['state'],
+                            'severity': result['severity'],
+                            'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None
+                            }
                     agg['results'].append(res)
                 elif scanner == 'kics' :
                     ref = str(result['data']['platform']) + ' ' + str(result['data']['queryName']) + ' ' + str(result['data']['fileName'])
@@ -372,6 +378,7 @@ class cxprocessor(baserunner) :
                                 'violatedpoliciescount': package['violatedPoliciesCount'],
                                 'violatedpolicies': package['violatedPolicies'],
                                 # << From package
+                                'exploitablepath': len(result['data']['exploitableMethods']) if result['data']['exploitableMethods'] else 0,
                                 'state': result['state'],
                                 'status': result['status'],
                                 'severity': result['severity'],
@@ -395,7 +402,6 @@ class cxprocessor(baserunner) :
                             'cxonelink': resultsurl + '/sca?internalPath=' + parse.quote('/vulnerabilities/' + parse.quote(result['id'] + ':' + result['data']['packageIdentifier'], safe = '') + '/vulnerabilityDetailsGql', safe = '')
                             }
                     agg['results'].append(res)
-
 
 
 

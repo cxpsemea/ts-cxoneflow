@@ -371,7 +371,7 @@ class jirafeedback(basefeedback) :
                         elif fname == 'recommendation' :
                             fieldvalue = resultelement['expectedValue']
 
-                    # Kics result
+                    # Sca result
                     if scanner == 'sca' :
 
                         if fname == 'package-name' :

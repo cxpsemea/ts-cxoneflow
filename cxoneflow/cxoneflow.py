@@ -99,7 +99,7 @@ class cxoneflow(baserunner) :
                 errorcount += 1
                 raise Exception( 'Failed connecting to CXONE with "' + str(e) + '"', True, True, e )
             # Check if THIS user has the required permissions
-            cxxoneconn.checkpermissions( perm_cxone = True, perm_accesscontrol = False )
+            cxxoneconn.checkpermissions( perm_cxone = True, perm_accesscontrol = False, perm_dast = False, perm_cxreportonly = True )
 
             has_results = False
             scandata    = None
