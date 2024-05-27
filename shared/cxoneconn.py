@@ -174,28 +174,13 @@ class cxoneconn(object):
 
             if not auth_cxone and perm_cxone :
                 if perm_cxreportonly :
-                    if 'view-projects' in tokendata['roles_ast'] and \
+                    if ('ast-viewer' in tokendata['roles_ast']) or ('view-projects' in tokendata['roles_ast'] and \
                         'view-policy-management' in tokendata['roles_ast'] and \
                         'view-queries' in tokendata['roles_ast'] and \
                         'view-results' in tokendata['roles_ast'] and \
                         'view-preset' in tokendata['roles_ast'] and \
-                        'ast-viewer' in tokendata['roles_ast'] and \
                         'view-applications' in tokendata['roles_ast'] and \
-                        'view-scans' in tokendata['roles_ast'] :
-                            
-# manage-reports
-# view-engines
-# view-results
-# analytics-vulnerability-dashboard-view
-# view-risk-management
-# view-tenant-params
-# view-project-params
-# view-projects
-# view-scans
-# view-preset
-# analytics-scan-dashboard-view
-# view-applications
-# view-queries                            
+                        'view-scans' in tokendata['roles_ast'] ) :
                             auth_cxone = True
                 else :
                     if 'create-project' in tokendata['roles_ast'] and \
