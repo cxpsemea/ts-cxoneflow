@@ -145,7 +145,7 @@ class cxoneconn(object):
     # ---------------------
     # Permissions check
     # ---------------------
-    def checkpermissions( self, perm_cxone: bool = True, perm_accesscontrol: bool = False, perm_dast: bool = False ) :
+    def checkpermissions( self, perm_cxone: bool = True, perm_accesscontrol: bool = False, perm_dast: bool = False, perm_cxreportonly = False ) :
 
         auth_error  = ''
         auth_cxone  = False
@@ -173,70 +173,95 @@ class cxoneconn(object):
                 auth_dast = True
 
             if not auth_cxone and perm_cxone :
-                if 'create-project' in tokendata['roles_ast'] and \
-                  'view-projects' in tokendata['roles_ast'] and \
-                  'delete-application' in tokendata['roles_ast'] and \
-                  'delete-webhook' in tokendata['roles_ast'] and \
-                  'delete-scan-if-in-group' in tokendata['roles_ast'] and \
-                  'create-webhook' in tokendata['roles_ast'] and \
-                  'ast-scanner' in tokendata['roles_ast'] and \
-                  'update-scan' in tokendata['roles_ast'] and \
-                  'my_test_role' in tokendata['roles_ast'] and \
-                  'delete-query' in tokendata['roles_ast'] and \
-                  'update-feedbackapp' in tokendata['roles_ast'] and \
-                  'delete-project' in tokendata['roles_ast'] and \
-                  'view-project-params' in tokendata['roles_ast'] and \
-                  'delete-pool' in tokendata['roles_ast'] and \
-                  'create-pool' in tokendata['roles_ast'] and \
-                  'open-feature-request' in tokendata['roles_ast'] and \
-                  'view-policy-management' in tokendata['roles_ast'] and \
-                  'ast-risk-manager' in tokendata['roles_ast'] and \
-                  'update-tenant-params' in tokendata['roles_ast'] and \
-                  'view-queries' in tokendata['roles_ast'] and \
-                  'manage-webhook' in tokendata['roles_ast'] and \
-                  'create-feedbackapp' in tokendata['roles_ast'] and \
-                  'update-pool' in tokendata['roles_ast'] and \
-                  'access-iam' in tokendata['roles_ast'] and \
-                  'create-application' in tokendata['roles_ast'] and \
-                  'queries-editor' in tokendata['roles_ast'] and \
-                  'view-results' in tokendata['roles_ast'] and \
-                  'update-query' in tokendata['roles_ast'] and \
-                  'delete-feedbackapp' in tokendata['roles_ast'] and \
-                  'update-result-not-exploitable' in tokendata['roles_ast'] and \
-                  'update-project' in tokendata['roles_ast'] and \
-                  'view-engines' in tokendata['roles_ast'] and \
-                  'delete-scan' in tokendata['roles_ast'] and \
-                  'create-query' in tokendata['roles_ast'] and \
-                  'update-result' in tokendata['roles_ast'] and \
-                  'view-preset' in tokendata['roles_ast'] and \
-                  'update-policy-management' in tokendata['roles_ast'] and \
-                  'update-preset' in tokendata['roles_ast'] and \
-                  'delete-policy-management' in tokendata['roles_ast'] and \
-                  'view-webhooks' in tokendata['roles_ast'] and \
-                  'update-access' in tokendata['roles_ast'] and \
-                  'manage-policy-management' in tokendata['roles_ast'] and \
-                  'open-support-ticket' in tokendata['roles_ast'] and \
-                  'ast-viewer' in tokendata['roles_ast'] and \
-                  'view-access' in tokendata['roles_ast'] and \
-                  'manage-feedbackapp' in tokendata['roles_ast'] and \
-                  'view-pools' in tokendata['roles_ast'] and \
-                  'delete-preset' in tokendata['roles_ast'] and \
-                  'view-applications' in tokendata['roles_ast'] and \
-                  'update-application' in tokendata['roles_ast'] and \
-                  'view-license' in tokendata['roles_ast'] and \
-                  'update-project-params' in tokendata['roles_ast'] and \
-                  'create-preset' in tokendata['roles_ast'] and \
-                  'view-feedbackapp' in tokendata['roles_ast'] and \
-                  'create-policy-management' in tokendata['roles_ast'] and \
-                  'order-services' in tokendata['roles_ast'] and \
-                  'manage-project' in tokendata['roles_ast'] and \
-                  'view-tenant-params' in tokendata['roles_ast'] and \
-                  'view-scans' in tokendata['roles_ast'] and \
-                  'create-scan' in tokendata['roles_ast'] and \
-                  'manage-access' in tokendata['roles_ast'] and \
-                  'manage-application' in tokendata['roles_ast'] and \
-                  'update-webhoo' in tokendata['roles_ast'] :
-                    auth_cxone = True
+                if perm_cxreportonly :
+                    if 'view-projects' in tokendata['roles_ast'] and \
+                        'view-policy-management' in tokendata['roles_ast'] and \
+                        'view-queries' in tokendata['roles_ast'] and \
+                        'view-results' in tokendata['roles_ast'] and \
+                        'view-preset' in tokendata['roles_ast'] and \
+                        'ast-viewer' in tokendata['roles_ast'] and \
+                        'view-applications' in tokendata['roles_ast'] and \
+                        'view-scans' in tokendata['roles_ast'] :
+                            
+# manage-reports
+# view-engines
+# view-results
+# analytics-vulnerability-dashboard-view
+# view-risk-management
+# view-tenant-params
+# view-project-params
+# view-projects
+# view-scans
+# view-preset
+# analytics-scan-dashboard-view
+# view-applications
+# view-queries                            
+                            auth_cxone = True
+                else :
+                    if 'create-project' in tokendata['roles_ast'] and \
+                        'view-projects' in tokendata['roles_ast'] and \
+                        'delete-application' in tokendata['roles_ast'] and \
+                        'delete-webhook' in tokendata['roles_ast'] and \
+                        'delete-scan-if-in-group' in tokendata['roles_ast'] and \
+                        'create-webhook' in tokendata['roles_ast'] and \
+                        'ast-scanner' in tokendata['roles_ast'] and \
+                        'update-scan' in tokendata['roles_ast'] and \
+                        'my_test_role' in tokendata['roles_ast'] and \
+                        'delete-query' in tokendata['roles_ast'] and \
+                        'update-feedbackapp' in tokendata['roles_ast'] and \
+                        'delete-project' in tokendata['roles_ast'] and \
+                        'view-project-params' in tokendata['roles_ast'] and \
+                        'delete-pool' in tokendata['roles_ast'] and \
+                        'create-pool' in tokendata['roles_ast'] and \
+                        'open-feature-request' in tokendata['roles_ast'] and \
+                        'view-policy-management' in tokendata['roles_ast'] and \
+                        'ast-risk-manager' in tokendata['roles_ast'] and \
+                        'update-tenant-params' in tokendata['roles_ast'] and \
+                        'view-queries' in tokendata['roles_ast'] and \
+                        'manage-webhook' in tokendata['roles_ast'] and \
+                        'create-feedbackapp' in tokendata['roles_ast'] and \
+                        'update-pool' in tokendata['roles_ast'] and \
+                        'access-iam' in tokendata['roles_ast'] and \
+                        'create-application' in tokendata['roles_ast'] and \
+                        'queries-editor' in tokendata['roles_ast'] and \
+                        'view-results' in tokendata['roles_ast'] and \
+                        'update-query' in tokendata['roles_ast'] and \
+                        'delete-feedbackapp' in tokendata['roles_ast'] and \
+                        'update-result-not-exploitable' in tokendata['roles_ast'] and \
+                        'update-project' in tokendata['roles_ast'] and \
+                        'view-engines' in tokendata['roles_ast'] and \
+                        'delete-scan' in tokendata['roles_ast'] and \
+                        'create-query' in tokendata['roles_ast'] and \
+                        'update-result' in tokendata['roles_ast'] and \
+                        'view-preset' in tokendata['roles_ast'] and \
+                        'update-policy-management' in tokendata['roles_ast'] and \
+                        'update-preset' in tokendata['roles_ast'] and \
+                        'delete-policy-management' in tokendata['roles_ast'] and \
+                        'view-webhooks' in tokendata['roles_ast'] and \
+                        'update-access' in tokendata['roles_ast'] and \
+                        'manage-policy-management' in tokendata['roles_ast'] and \
+                        'open-support-ticket' in tokendata['roles_ast'] and \
+                        'ast-viewer' in tokendata['roles_ast'] and \
+                        'view-access' in tokendata['roles_ast'] and \
+                        'manage-feedbackapp' in tokendata['roles_ast'] and \
+                        'view-pools' in tokendata['roles_ast'] and \
+                        'delete-preset' in tokendata['roles_ast'] and \
+                        'view-applications' in tokendata['roles_ast'] and \
+                        'update-application' in tokendata['roles_ast'] and \
+                        'view-license' in tokendata['roles_ast'] and \
+                        'update-project-params' in tokendata['roles_ast'] and \
+                        'create-preset' in tokendata['roles_ast'] and \
+                        'view-feedbackapp' in tokendata['roles_ast'] and \
+                        'create-policy-management' in tokendata['roles_ast'] and \
+                        'order-services' in tokendata['roles_ast'] and \
+                        'manage-project' in tokendata['roles_ast'] and \
+                        'view-tenant-params' in tokendata['roles_ast'] and \
+                        'view-scans' in tokendata['roles_ast'] and \
+                        'create-scan' in tokendata['roles_ast'] and \
+                        'manage-access' in tokendata['roles_ast'] and \
+                        'manage-application' in tokendata['roles_ast'] and \
+                        'update-webhoo' in tokendata['roles_ast'] :
+                            auth_cxone = True
 
             if not auth_dast and perm_dast :
                 if 'dast-delete-scan' in tokendata['roles_ast'] and \

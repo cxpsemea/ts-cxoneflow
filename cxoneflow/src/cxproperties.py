@@ -78,6 +78,7 @@ class cxproperties(object) :
         self.sca_filter_dependency_type = None
         self.sca_filter_ignore_dev_test = None
         self.sca_filter_policyviolation = None
+        self.sca_filter_exploitablepath = None
         # Thresholds
         self.sca_threshold_new          = None
         self.sca_threshold_score        = None
@@ -347,6 +348,10 @@ class cxproperties(object) :
         # Have SCA dependency violation filter ?
         if config.haskey('sca.filter-policy-violation') :
             self.sca_filter_policyviolation = config.value('sca.filter-policy-violation')
+            
+        # Have SCA exploitable path filter ?
+        if config.haskey('sca.filter-exploitable-path') :
+            self.sca_filter_exploitablepath = config.value('sca.filter-exploitable-path')
 
         # Have SAST thresholds ?
         
