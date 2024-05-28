@@ -243,6 +243,12 @@ class cxprocessor(baserunner) :
                     if score > counters['CvsScore'] :
                         counters['CvsScore']        = score
                         counters['CvsScorePackage'] = result['data']['packageIdentifier']
+                        
+                # Handle description. It seams some results don't have it
+                if 'description' in result :
+                    sdescription = result['description']
+                else :
+                    sdescription = ''
 
                 # Aggergate
                 if self.__aggergators[scanner] == None :
@@ -267,7 +273,7 @@ class cxprocessor(baserunner) :
                                 'status': result['status'],
                                 'severity': result['severity'],
                                 'similarityid': result['similarityId'],
-                                'description': result['description'],
+                                'description': sdescription,
                                 'filename': str(result['data']['nodes'][0]['fileName']).lstrip('/').lstrip('\\'),
                                 'resulthash': result['data']['resultHash'], 
                                 'cxonelink': resultsurl + '/sast?result-id=' + parse.quote(result['data']['resultHash'], safe = '') + '&redirect=false' if result['data']['resultHash'] else None,
@@ -322,7 +328,7 @@ class cxprocessor(baserunner) :
                                 'status': result['status'],
                                 'severity': result['severity'],
                                 'similarityid': result['similarityId'],
-                                'description': result['description'],
+                                'description': sdescription,
                                 'filename': str(result['data']['fileName']).lstrip('/').lstrip('\\'),
                                 'issuetype': result['data']['issueType'],
                                 'value': result['data']['value'],
@@ -383,7 +389,7 @@ class cxprocessor(baserunner) :
                                 'status': result['status'],
                                 'severity': result['severity'],
                                 'similarityid': result['similarityId'],
-                                'description': result['description'],
+                                'description': sdescription,
                                 'cxonelink': resultsurl + '/sca?internalPath=' + parse.quote('/vulnerabilities/' + parse.quote(result['id'] + ':' + result['data']['packageIdentifier'], safe = '') + '/vulnerabilityDetailsGql', safe = ''), 
                                 'comment': None,
                                 'results': []
