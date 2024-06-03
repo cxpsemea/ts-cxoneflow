@@ -111,6 +111,7 @@ kics:
  
 jira:
   url: [your-jira-url]
+  cloud: true
   username: [your-jira-user]
   token: [your-jira-token]
   project: [your-jira-project]

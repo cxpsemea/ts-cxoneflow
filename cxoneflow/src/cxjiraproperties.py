@@ -8,6 +8,7 @@ class jiraproperties(object) :
 
     def __init__(self, config: config) :
         self.url                            = config.value( 'jira.url' )
+        self.cloud                          = config.value( 'jira.cloud', True )
         self.username                       = config.value( 'jira.username' )
         self.token                          = config.value( 'jira.token' )
         self.proxy_url                      = config.value( 'jira.proxy_url' ) 
@@ -76,30 +77,6 @@ class jiraproperties(object) :
         # Fields defined in config
         self.__fields                       = config.value( 'jira.fields' )
         self.fields                         = []        # To be filled with processfields call
-
-        # private String closeTransitionField;
-        # private String closeTransitionValue;
-        # private String closeFalsePositiveTransitionValue;
-            
-        # private String parentUrl = "";
-        # private String grandParentUrl = "";
-        # private boolean child = false;
-
-        # private List<String> statusCategoryOpenName = Arrays.asList("To Do", "In Progress", "Reopened");
-        # private List<String> statusCategoryClosedName = Arrays.asList("Done", "Resolve", "Closed");
-        # @Getter @Setter
-        # private String projectKeyScript;
-        # private String labelPrefix;
-        # @Getter @Setter
-                            # private String scaIssueSummaryBranchFormat = "[PREFIX]: [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO].[BRANCH][POSTFIX]";
-        # private List<String> suppressCodeSnippets;
-        # //dynamically set
-        # @Getter @Setter
-        # private String Version;
-        # @Getter @Setter
-        # private String DeployType;
-        # @Getter @Setter
-        # private TokenType TokenType;
 
 
     def __adjustformatmasks(self) :
