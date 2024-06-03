@@ -54,10 +54,9 @@ class jirafeedback(basefeedback) :
         super().__init__(config, cxparams, scandata, resultdata)
 
 
-
     def __initialize(self) :
         self.jira = cxjiraapi( fqdn = self.jiraparams.url, username = self.jiraparams.username, apikey = self.jiraparams.token, 
-                        iscloud = True, timeout = self.jiraparams.httptimeout,
+                        iscloud = self.jiraparams.cloud, timeout = self.jiraparams.httptimeout,
                         proxy_url = self.jiraparams.proxy_url, proxy_username = self.jiraparams.proxyuser, proxy_password = self.jiraparams.proxypass )
         # Get jira project using key
         project = self.jira.project( self.jiraparams.project )
