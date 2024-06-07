@@ -121,6 +121,7 @@ class cxoneflow(baserunner) :
                     if cxparams.bug_tracker == 'jira' :
                         feeder = jirafeedback( self.config, cxparams, scandata, results )
                     if feeder :
+                        cxlogger.verbose( '============================================================' )
                         feeder.processfeedback()
                     else :
                         cxlogger.verbose( 'SKIPPED: no supported bug-tracker found' )

@@ -55,9 +55,18 @@ class jirafeedback(basefeedback) :
 
 
     def __initialize(self) :
-        self.jira = cxjiraapi( fqdn = self.jiraparams.url, username = self.jiraparams.username, apikey = self.jiraparams.token, 
-                        iscloud = self.jiraparams.cloud, timeout = self.jiraparams.httptimeout,
-                        proxy_url = self.jiraparams.proxy_url, proxy_username = self.jiraparams.proxyuser, proxy_password = self.jiraparams.proxypass )
+        # Connect to jira, either with uname+pass or with PAT
+        try :
+            self.jira = cxjiraapi( fqdn = self.jiraparams.url, username = self.jiraparams.username, apikey = self.jiraparams.token, 
+                            iscloud = self.jiraparams.cloud, veryfyssl = self.jiraparams.verify_ssl, timeout = self.jiraparams.httptimeout,
+                            proxy_url = self.jiraparams.proxy_url, proxy_username = self.jiraparams.proxyuser, proxy_password = self.jiraparams.proxypass )
+
+            jiraversion, jiratype = self.jira.serverinfo()
+            cxlogger.verbose( 'Connected to JIRA ' + jiratype + ', ver ' + jiraversion )
+        except Exception as e:
+            cxlogger.logerror( 'Unable to connect to JIRA at "' + self.jiraparams.url + '"', e )
+            raise Exception( 'Unable to connect to JIRA at "' + self.jiraparams.url + '"' )
+        
         # Get jira project using key
         project = self.jira.project( self.jiraparams.project )
         self.jiraparams.projectid = project['id'] 
@@ -73,7 +82,6 @@ class jirafeedback(basefeedback) :
         self.jiraparams.issuefields   = self.jira.projectissuefields(self.jiraparams.projectid, self.jiraparams.issuetypeid )
         # Process fields mappings
         self.jiraparams.processfields()
-
 
 
     def __retrievejiratickets( self, scanner: str ) :

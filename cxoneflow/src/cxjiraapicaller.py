@@ -28,18 +28,20 @@ class cxjiraapi(object) :
         self.__jirausr: str     = None
         self.__jirakey: str     = None
         self.__jiracloud: bool  = True
+        self.__jiraverssl: bool = True
         self.__jiratimeout: int = None
         self.__proxyurl: str    = None
         self.__proxyuser: str   = None
         self.__proxypass: str   = None
 
 
-    def __init__(self, fqdn: str, username: str, apikey: str, iscloud: bool = True, timeout: int = None, proxy_url: str = None, proxy_username: str = None, proxy_password: str = None ) :
+    def __init__(self, fqdn: str, username: str, apikey: str, iscloud: bool = True, verifyssl: bool = True, timeout: int = None, proxy_url: str = None, proxy_username: str = None, proxy_password: str = None ) :
         self.__jiraintf: Jira   = None
         self.__jiraurl: str     = fqdn
         self.__jirausr: str     = username
         self.__jirakey: str     = apikey
         self.__jiracloud: bool  = iscloud  
+        self.__jiraverssl: bool = verifyssl
         self.__jiratimeout: int = timeout
         self.__proxyurl: str    = proxy_url
         self.__proxyuser: str   = proxy_username
@@ -68,14 +70,25 @@ class cxjiraapi(object) :
                         proxyendpoint = proxyurl[sep+3:]
                         proxyurl = proxyprotocol + parse.quote(self.__proxyuser, safe = '') + ':' + parse.quote(self.__proxypass, safe = '') + '@' + proxyendpoint
                 proxyhosts  = { 'http': proxyurl, 'https': proxyurl }
-                self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, proxies = proxyhosts, timeout = time_out )
+                # Check PAT or basic auth
+                if not self.__jirausr :
+                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                else :
+                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
             else :
-                self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, timeout = time_out )
+                # Check PAT or basic auth
+                if not self.__jirausr :
+                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                else :
+                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
         return self.__jiraintf
     
 
-    # def checkpermissions(self) :
-
+    def serverinfo(self):
+        data = self.jira.get_server_info()
+        # Version string in the format: 9.16.0
+        # Deployment type string of "", "Server", "DataCenter" 
+        return data['version'], data['deploymentType']      
 
 
     def jql(self, jqlquery: str, fields: str = '*all', start: int = 0, limit = None, expand = None, validate_query = None ) :
@@ -97,8 +110,33 @@ class cxjiraapi(object) :
         
 
     def projectissuefields(self, projectkey, issuetypekey) :
-        data = self.jira.issue_createmeta_fieldtypes( project = projectkey, issue_type_id = issuetypekey )
-        return data['fields']
+        data = []
+        found = False
+        # Try using jira v9.x api
+        if not found :
+            try:
+                xdata = self.jira.issue_createmeta_fieldtypes( project = projectkey, issue_type_id = issuetypekey )
+                if 'fields' in xdata :      # At JIRA cloud
+                    data = xdata['fields']
+                    found = True
+                elif 'values' in xdata :    # At JIRA server
+                    data = xdata['values']
+                    found = True
+            except :
+                pass
+        # Try using old v8.x api
+        if not found :
+            try :
+                xdata = self.jira.issue_createmeta(self, project = projectkey, expand = "projects.issuetypes.fields")
+                if 'projects' in xdata :
+                    xissues = xdata['projects']['issuetypes']
+                    xissue = next( filter( lambda el: el['id'] == issuetypekey ), None )
+                    if xissue and 'fields' in xissue :
+                        data = xissue['fields']
+                        found = True
+            except :
+                pass
+        return data
     
 
     def projectgetissues( self, projectkey, issuetypekey, extraquery: str = None, pagesize: int = 100 ) :
@@ -115,7 +153,6 @@ class cxjiraapi(object) :
             top += limit
             data = self.jira.jql( jql, start = top, limit = limit )
         return issues
-
         # &maxResults=1000
         # http://localhost:8080/rest/api/2/issue/createmeta?projectKeys=JRA&issuetypeNames=Bug&
 

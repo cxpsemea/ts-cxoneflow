@@ -9,6 +9,7 @@ class jiraproperties(object) :
     def __init__(self, config: config) :
         self.url                            = config.value( 'jira.url' )
         self.cloud                          = config.value( 'jira.cloud', True )
+        self.verify_ssl                     = config.value( 'jira.verify_ssl', True )
         self.username                       = config.value( 'jira.username' )
         self.token                          = config.value( 'jira.token' )
         self.proxy_url                      = config.value( 'jira.proxy_url' ) 
