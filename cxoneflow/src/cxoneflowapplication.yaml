@@ -111,9 +111,8 @@ kics:
  
 jira:
   url: [your-jira-url]
-  cloud: true
-  username: [your-jira-user]
-  token: [your-jira-token]
+  username: [your-jira-user-or-empty-to-use-pat-tokes]
+  token: [your-jira-password-or-pat-token]
   project: [your-jira-project]
   issue-type: Bug
   priorities:
