@@ -1,0 +1,80 @@
+#
+# These variables can be overridden in your .yml file or as environment variables or as secrets.
+#
+# Find more documentation at: https://docs.checkmarx.com/en/34965-68702-checkmarx-one-github-actions.html
+#
+
+# SECRETS TO DEFINE (RECOMMENDED)
+# -------------------------------
+# - CX_BASE_URI       Checkmarx One URI
+# - CX_BASE_IAM_URI   Checkmarx Access Control (IAM) URI
+# - CX_TENANT         Checkmarx One tenant name
+# - CX_CLIENT_ID      Checkmarx One Oauth Client Id
+# - CX_CLIENT_SECRET  Checkmarx One Oauth Client Secret
+# - CX_JIRA_URL       Jira URI
+# - CX_JIRA_USERNAME  Jira username (leave empty if the token below is a PAT)
+# - CX_JIRA_TOKEN     Jira password, token, or PAT
+
+
+env:
+    CX_PROJECT_NAME: ""                       # The project name in Checkmarx (if empty defaults to repo)
+    CX_ADDITIONAL_PARAMS: ""                  # Optional aditional params to Checkmarx One scan
+    CX_JIRA_PROJECT: ""                       # The project name in JIRA (if empty JIRA tickets are NOT processed)
+
+
+name: Checkmarx AST Scan
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Checkmarx AST CLI Action
+        id: cxone_scan
+        uses: checkmarx/ast-github-action@main 
+        with:
+          base_uri: ${{ secrets.CX_BASE_URI }}
+          cx_client_id: ${{ secrets.CX_CLIENT_ID }} 
+          cx_client_secret: ${{ secrets.CX_CLIENT_SECRET }} 
+          cx_tenant: ${{ secrets.CX_TENANT }} 
+          project_name: ${{ env.CX_PROJECT_NAME }}
+          additional_params: ${{ env.CX_ADDITIONAL_PARAMS }}
+      - name: Process JIRA Tickets
+        # The scan can report failure in case of a security gate violation, such as tresholds od policies
+        # Is this case, the aim is to break the build due to those violations but the scan itself succeeds
+        # JIRA tickets shall be created anyway, so we do so if we have a valid scan id
+        if: ( success() || failure() ) && ( ${{env.CX_JIRA_PROJECT}} != "" )
+        run: >-   
+            if [ -n "${{steps.cxone_scan.outputs.cxScanID}}" ]; then
+              echo "Processing JIRA tickets for scan ID:" "${{steps.cxone_scan.outputs.cxScanID}}"
+              wget https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-ubuntu64.tar.gz
+              mkdir -p /tmp/cxoneflow/logs
+              tar xzvf cxoneflow-ubuntu64.tar.gz -C /tmp/cxoneflow
+              rm cxoneflow-ubuntu64.tar.gz
+              export CXTOOL_CXONE_URL=${{secrets.CX_BASE_URI}} 
+              export CXTOOL_CXONE_ACL=${{secrets.CX_BASE_IAM_URI}}
+              export CXTOOL_CXONE_CLIENTID=${{secrets.CX_CLIENT_ID}}
+              export CXTOOL_CXONE_APIKEY=${{secrets.CX_CLIENT_SECRET}}
+              export CXTOOL_CXONE_GRANTTYPE=client_credentials
+              export CXTOOL_CXONE_TENANT=${{secrets.CX_TENANT}}
+              export CXTOOL_JIRA_URL=${{secrets.CX_JIRA_URL}}
+              export CXTOOL_JIRA_USERNAME=${{secrets.CX_JIRA_USERNAME}}
+              export CXTOOL_JIRA_TOKEN=${{secrets.CX_JIRA_TOKEN}}
+              export CXTOOL_JIRA_PROJECT=${{env.CX_JIRA_PROJECT}}
+              /tmp/cxoneflow/cxoneflow --app "${{env.CX_JIRA_PROJECT}}" --scanid "${{steps.cxone_scan.outputs.cxScanID}}"
+            else
+              echo "JIRA tickets not processed."
+            fi        

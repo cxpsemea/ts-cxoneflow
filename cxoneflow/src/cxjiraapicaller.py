@@ -136,6 +136,8 @@ class cxjiraapi(object) :
                         found = True
             except :
                 pass
+        if not found :
+            raise Exception( 'Unable to detect issue fields. ')
         return data
     
 

@@ -45,7 +45,7 @@ class cxverboseandloghandler(object) :
         self.__locker = None
 
 
-    def activate( self, verbose: bool = True, logging: bool = True, debug: bool = None ) :
+    def activate( self, verbose: bool = True, logging: bool = True, debug: bool = None, logspath: str = None ) :
         self.__locker.acquire()
         try :
             if verbose :
@@ -54,9 +54,12 @@ class cxverboseandloghandler(object) :
                 if self.__logactive :
                     self.__logdebug    = debug
                     return    
-                logspath = config.mainrootpath() + os.sep + DEFAULT_LOGS_PATH
-                os.makedirs(logspath, exist_ok = True)
-                filename = logspath + os.sep + config.mainmodulename() + '_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.log'
+                if not logspath :
+                    logs_path = config.mainrootpath() + os.sep + DEFAULT_LOGS_PATH
+                else :
+                    logs_path = logspath
+                os.makedirs(logs_path, exist_ok = True)
+                filename = logs_path + os.sep + config.mainmodulename() + '_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.log'
                 if not self.__logfile :
                     self.__logfile = open(filename, 'w', encoding='UTF8', newline='', buffering=1)
                 self.__logdebug    = debug
