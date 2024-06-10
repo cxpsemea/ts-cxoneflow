@@ -1,10 +1,6 @@
 cx-flow:
   #bug-tracker: Json
   bug-tracker: JIRA
-  bug-tracker-impl:
-  #  - Json
-  #branches:
-  # - master
   filter-severity:
   # - Critical
   - High
