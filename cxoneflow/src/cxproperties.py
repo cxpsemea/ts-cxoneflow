@@ -1,6 +1,9 @@
 
 from cxloghandler import cxlogger
 from config import config
+import os
+import json
+
 
 
 class cxproperties(object) :
@@ -8,6 +11,22 @@ class cxproperties(object) :
     def __init__( self, config: config) :
 
         self.scanid                     = config.value( 'scanid' )
+        
+        # If scanid was supplyed as a file name, expect scan summary json and try parse it
+        # Check if the scan id is to be taken from the AST-CLI json output
+        # Comodity for CI/CD pipelines
+        if '.' in str(self.scanid) :
+            cli_outputfile = self.scanid
+            self.scanid = None
+            if os.path.isfile(cli_outputfile) :
+                try :
+                    with open(cli_outputfile) as f:
+                        xdata = json.load(f)
+                        # The scan summary
+                        if 'ID' in xdata :
+                            self.scanid = xdata['ID']
+                except :
+                    pass
         
         self.ticketkeyname              = 'TICKET_KEY'
 

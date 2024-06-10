@@ -39,7 +39,8 @@ class config(object) :
 
     # Constructor
     # - fileorpath: config file or the config location
-    #   defaults to application mainmodule()\config.yaml/yml/json/ini
+    #   defaults to application mainmodule()\config.yaml/yml/json
+    #   command-line argument --config-file is checked
     # - defaults: a dictionary containing the default variable names and values
     #   if not present, fileorpath with be used to load whatever is available
     # - checkenvvars: will load configurations from environment variables
@@ -50,15 +51,19 @@ class config(object) :
     # - autoclean: if set, parameters without a value will be removed
     #   if set, command like params will not work
     #   CXTOOL_ prefix is used by default
+    # - logsfolder: the folder where logs shall be written
+    #   default is None, meaning ./logs
+    #   command-line argument --logs-folder is checked    
 
 
-    def __init__(self, fileorpath = None, defaults = None, checkenvvars = True, envvarsprefix = None, autoclean = False, defaultname = 'config' ) :
+    def __init__(self, fileorpath: str = None, defaults = None, checkenvvars: bool = True, envvarsprefix: str = None, autoclean: bool = False, defaultname: str = 'config', logsfolder: str = None ) :
         self.__content      = defaults
         self.__commands     = []
         self.__flat         = None
         self.__filename     = None
         self.__checkenv     = checkenvvars
         self.__autoclean    = autoclean
+        self.__logsfolder   = logsfolder
         if envvarsprefix :
             self.__envprefix    = envvarsprefix
         else :
@@ -79,6 +84,10 @@ class config(object) :
             else :
                 # File name or path not set - resolve main application location
                 path = self.mainrootpath()
+                
+        # Do we have a --logs-folder command line argument ?
+        if not self.__logsfolder :
+            self.__logsfolder = self.__command_arg('logs-folder' )
 
         # Search for config.yaml, config.yml, config.json
         if (not self.__filename) and (path) :
@@ -380,6 +389,11 @@ class config(object) :
     def flat(self) :
         return self.__flat
 
+    
+    # Return defined logs folder on None (to use default)    
+    @property
+    def logsfolder(self):
+        return self.__logsfolder
 
 
     # Returns the value from a specific key
