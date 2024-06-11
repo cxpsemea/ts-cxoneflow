@@ -58,7 +58,7 @@ class jirafeedback(basefeedback) :
         # Connect to jira, either with uname+pass or with PAT
         try :
             self.jira = cxjiraapi( fqdn = self.jiraparams.url, username = self.jiraparams.username, apikey = self.jiraparams.token, 
-                            iscloud = self.jiraparams.cloud, veryfyssl = self.jiraparams.verify_ssl, timeout = self.jiraparams.httptimeout,
+                            iscloud = self.jiraparams.cloud, verifyssl = self.jiraparams.verify_ssl, timeout = self.jiraparams.httptimeout,
                             proxy_url = self.jiraparams.proxy_url, proxy_username = self.jiraparams.proxyuser, proxy_password = self.jiraparams.proxypass )
 
             jiraversion, jiratype = self.jira.serverinfo()
