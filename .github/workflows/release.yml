@@ -158,6 +158,9 @@ jobs:
         shell: alpine.sh --root {0}
       - name: Build binaries
         run: |
+          find shared -name *.py -exec chmod 755 {} 
+          find cxoneflow -name *.py -exec chmod 755 {} 
+          find cxoneflow -name *.yaml -exec chmod 755 {}
           find shared -name *.py -exec dos2unix {} \;
           find cxoneflow -name *.py -exec dos2unix {} \;
           find cxoneflow -name *.yaml -exec dos2unix {} \;
