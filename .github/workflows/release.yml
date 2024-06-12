@@ -147,6 +147,7 @@ jobs:
           packages: >
             bash
             binutils
+            dos2unix
             python3
             py3-pip
       - name: Install Python
@@ -157,6 +158,9 @@ jobs:
         shell: alpine.sh --root {0}
       - name: Build binaries
         run: |
+          find shared -name *.py -exec dos2unix {} \;
+          find cxoneflow -name *.py -exec dos2unix {} \;
+          find cxoneflow -name *.yaml -exec dos2unix {} \;
           python -m venv ./
           . ./bin/activate
           pip install -r .build/build_requirements.txt
