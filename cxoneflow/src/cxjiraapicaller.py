@@ -72,15 +72,15 @@ class cxjiraapi(object) :
                 proxyhosts  = { 'http': proxyurl, 'https': proxyurl }
                 # Check PAT or basic auth
                 if not self.__jirausr :
-                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out )
                 else :
-                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, proxies = proxyhosts, timeout = time_out )
             else :
                 # Check PAT or basic auth
                 if not self.__jirausr :
-                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                    self.__jiraintf = Jira( url = self.__jiraurl, token = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out )
                 else :
-                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out, backoff_and_retry = True, max_backoff_retries = 10 )
+                    self.__jiraintf = Jira( url = self.__jiraurl, username = self.__jirausr, password = self.__jirakey, cloud = self.__jiracloud, verify_ssl = self.__jiraverssl, timeout = time_out )
         return self.__jiraintf
     
 
