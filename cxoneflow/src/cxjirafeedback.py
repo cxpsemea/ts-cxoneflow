@@ -113,7 +113,7 @@ class jirafeedback(basefeedback) :
 
 
     def __getscuritylevel( self, jirafieldname: str, value: str ) :
-        jira_field = next( filter( lambda el: el['name'] == jirafieldname or el['key'] == jirafieldname, self.jiraparams.issuefields ), None )
+        jira_field = next( filter( lambda el: el['name'] == jirafieldname or el[self.jiraparams.issuefieldskey] == jirafieldname, self.jiraparams.issuefields ), None )
         if jira_field :
             allowed_values = jira_field['allowedValues']
             if allowed_values and len(allowed_values) > 0 :
