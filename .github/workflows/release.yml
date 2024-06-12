@@ -94,6 +94,8 @@ jobs:
           name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
+          replacesArtifacts: true
+
 
   # Ubuntu builds job
   build_ubuntu:
@@ -125,6 +127,7 @@ jobs:
           name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
+          replacesArtifacts: true
 
   # Alpine builds job
   build_alpine:
@@ -171,6 +174,7 @@ jobs:
           name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
+          replacesArtifacts: true
 
   # Macos builds job
   # To activate when signing is available
@@ -204,4 +208,5 @@ jobs:
   #         name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
   #         tag: "${{env.PS_VERSION}}"
   #         allowUpdates: true
+  #         replacesArtifacts: true
 
