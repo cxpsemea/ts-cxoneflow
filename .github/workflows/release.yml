@@ -158,11 +158,11 @@ jobs:
         shell: alpine.sh --root {0}
       - name: Build binaries
         run: |
-          find shared type f -exec chmod 666 {} \;
-          find cxoneflow -type f -exec chmod 666 {} \;
-          find shared -name *.py -exec dos2unix {} \;
-          find cxoneflow -name *.py -exec dos2unix {} \;
-          find cxoneflow -name *.yaml -exec dos2unix {} \;
+          # find shared type f -exec chmod 666 {} \;
+          # find cxoneflow -type f -exec chmod 666 {} \;
+          sudo find shared -name *.py -exec dos2unix {} \;
+          sudo find cxoneflow -name *.py -exec dos2unix {} \;
+          sudo find cxoneflow -name *.yaml -exec dos2unix {} \;
           python -m venv ./
           . ./bin/activate
           pip install -r .build/build_requirements.txt
