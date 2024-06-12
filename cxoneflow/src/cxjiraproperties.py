@@ -97,6 +97,13 @@ class jiraproperties(object) :
 
     def processfields(self) :
         self.fields = []
+        # Detect what the JIRA field key is. In JIRA Cloud it comes as 'key' while in JIRA Server it comes as 'fieldId'
+        jira_field_key_name = 'key'
+        if self.issuefields and len(self.issuefields) > 0 and (not 'key' in self.issuefields[0]) :
+            if 'fieldId' in self.issuefields[0] :
+                jira_field_key_name = 'fieldId' 
+            else :
+                jira_field_key_name = 'name'
         # Process config fields, if any
         if self.__fields and len(self.__fields) > 0 :
             for field in self.__fields :
@@ -122,14 +129,15 @@ class jiraproperties(object) :
                 #     if not (cxname.lower() in [ 'application', 'project', 'namespace', 'repo-name', 'repo-url', 'branch', 
                 #                 'severity', 'category', 'cwe', 'recommendation', 'loc', 'issue-link', 'filename', 'language', 'similarity-id' ]) :
                 #         raise Exception( 'Invalid field name "' + cxname + '" supplied' )
-                # Check jira name
-                jira_field = next( filter( lambda el: el['name'] == jiralabel or el['key'] == jiralabel, self.issuefields ), None )
+                # Check jira name and key
+                # In JIRA Cloud contains a 'key' field while in JIRA server it comes as 'fieldId'
+                jira_field = next( filter( lambda el: el['name'] == jiralabel or el[jira_field_key_name] == jiralabel, self.issuefields ), None )
                 # if not jira_field and jiratype not in ['label','security','priority'] :
                 if not jira_field and jiratype not in ['label','security'] :
                     raise Exception( 'Jira issue field "' + str(jiralabel) + '" was not found for issue type "' + str(self.issuetype) + '"' )
                 # Check jira base type
                 if jira_field :
-                    jiraname        = jira_field.get('key')
+                    jiraname        = jira_field.get(jira_field_key_name)
                     jiralabel       = jira_field.get('name')
                     jiraoperations  = jira_field.get('operations')
                     jirabasetype    = jira_field['schema'].get('type')
