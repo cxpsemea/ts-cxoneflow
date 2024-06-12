@@ -75,6 +75,7 @@ class jiraproperties(object) :
         self.__adjustformatmasks()
         # Fields for project/issue type
         self.issuefields                    = None      # To be filled after connect
+        self.issuefieldskey                 = 'key'     # To be checked after connect, JIRA Cloud has 'key', JIRA Server as 'fieldId'
         # Fields defined in config
         self.__fields                       = config.value( 'jira.fields' )
         self.fields                         = []        # To be filled with processfields call
@@ -98,12 +99,11 @@ class jiraproperties(object) :
     def processfields(self) :
         self.fields = []
         # Detect what the JIRA field key is. In JIRA Cloud it comes as 'key' while in JIRA Server it comes as 'fieldId'
-        jira_field_key_name = 'key'
         if self.issuefields and len(self.issuefields) > 0 and (not 'key' in self.issuefields[0]) :
             if 'fieldId' in self.issuefields[0] :
-                jira_field_key_name = 'fieldId' 
+                self.issuefieldskey = 'fieldId'
             else :
-                jira_field_key_name = 'name'
+                self.issuefieldskey = 'name'
         # Process config fields, if any
         if self.__fields and len(self.__fields) > 0 :
             for field in self.__fields :
@@ -131,7 +131,7 @@ class jiraproperties(object) :
                 #         raise Exception( 'Invalid field name "' + cxname + '" supplied' )
                 # Check jira name and key
                 # In JIRA Cloud contains a 'key' field while in JIRA server it comes as 'fieldId'
-                jira_field = next( filter( lambda el: el['name'] == jiralabel or el[jira_field_key_name] == jiralabel, self.issuefields ), None )
+                jira_field = next( filter( lambda el: el['name'] == jiralabel or el[self.issuefieldskey] == jiralabel, self.issuefields ), None )
                 # if not jira_field and jiratype not in ['label','security','priority'] :
                 if not jira_field and jiratype not in ['label','security'] :
                     raise Exception( 'Jira issue field "' + str(jiralabel) + '" was not found for issue type "' + str(self.issuetype) + '"' )

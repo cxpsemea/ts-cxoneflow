@@ -63,6 +63,7 @@ jobs:
         if: ( inputs.tag == 'NEW' && steps.getcurrentversion.outputs.tag != '0.0.0' )
         id: newcurrentversion
         run: echo "PS_VERSION=${{steps.inccurrentversion.outputs.tag}}" >> $GITHUB_ENV
+
         
   # Windows builds job
   build_windows:
@@ -129,6 +130,7 @@ jobs:
           allowUpdates: true
           replacesArtifacts: true
 
+
   # Alpine builds job
   build_alpine:
     needs: process_version
@@ -147,6 +149,7 @@ jobs:
           packages: >
             bash
             binutils
+            sudo
             python3
             py3-pip
       - name: Install Python
@@ -157,6 +160,9 @@ jobs:
         shell: alpine.sh --root {0}
       - name: Build binaries
         run: |
+          sudo find shared -name *.py -exec dos2unix {} \;
+          sudo find cxoneflow -name *.py -exec dos2unix {} \;
+          sudo find cxoneflow -name *.yaml -exec dos2unix {} \;
           python -m venv ./
           . ./bin/activate
           pip install -r .build/build_requirements.txt
@@ -175,6 +181,7 @@ jobs:
           tag: "${{env.PS_VERSION}}"
           allowUpdates: true
           replacesArtifacts: true
+
 
   # Macos builds job
   # To activate when signing is available
