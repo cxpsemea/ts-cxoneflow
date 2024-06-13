@@ -137,7 +137,7 @@ class jiraproperties(object) :
                     raise Exception( 'Jira issue field "' + str(jiralabel) + '" was not found for issue type "' + str(self.issuetype) + '"' )
                 # Check jira base type
                 if jira_field :
-                    jiraname        = jira_field.get(jira_field_key_name)
+                    jiraname        = jira_field.get(self.issuefieldskey)
                     jiralabel       = jira_field.get('name')
                     jiraoperations  = jira_field.get('operations')
                     jirabasetype    = jira_field['schema'].get('type')
