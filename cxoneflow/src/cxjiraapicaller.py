@@ -35,7 +35,7 @@ class cxjiraapi(object) :
         self.__proxypass: str   = None
 
 
-    def __init__(self, fqdn: str, username: str, apikey: str, iscloud: bool = True, verifyssl: bool = True, timeout: int = None, proxy_url: str = None, proxy_username: str = None, proxy_password: str = None ) :
+    def __init__(self, fqdn: str, username: str, apikey: str, iscloud: bool = False, verifyssl: bool = True, timeout: int = None, proxy_url: str = None, proxy_username: str = None, proxy_password: str = None ) :
         self.__jiraintf: Jira   = None
         self.__jiraurl: str     = fqdn
         self.__jirausr: str     = username
@@ -52,7 +52,7 @@ class cxjiraapi(object) :
     @property
     def jira(self) :
         if not self.__jiratimeout :
-            time_out = 1000
+            time_out = 10000
         else :
             time_out = self.__jiratimeout
         if not self.__jiraintf :
