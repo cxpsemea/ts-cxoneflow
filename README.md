@@ -33,3 +33,10 @@ Currently, can process results from SAST, SCA, and IaC scanners.
 The tickets created in JIRA maintain the same structure and the same identifiers as the created by the legacy CxFlow.
 With this approach, existing SAST or SCA tickets, created by CxFlow, will not be duplicated by this tool.
 JIRA cloud and server, v9.x and up, are supported.
+
+## Additional documentation
+
+- [Configuration Yaml file example](docs/CONFIGYAML.md)
+- [Configuration described](docs/CONFIGDESCRIPTION.md)
+- [JIRA fields](docs/JIRAFIELDS.md)
+- [CxOne fields for mappings](docs/FIELDSMAPPINGS.md)

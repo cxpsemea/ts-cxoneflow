@@ -110,10 +110,7 @@ class cxproperties(object) :
         if config.haskey('cx-flow.branches') :
             value = config.value('cx-flow.branches')
             if value :
-                if (type(value) is list) :      
-                    self.filter_branches    = value
-                else :
-                    self.filter_branches    = [value]
+                self.filter_branches    = self.__process_param_list(value)
                 # String and lowercase everything
                 self.filter_branches = [str(x).lower() for x in self.filter_branches]
                 if len(self.filter_branches) == 0 :
@@ -125,10 +122,7 @@ class cxproperties(object) :
             aux = []
             self.filter_scanners = []
             if value :
-                if (type(value) is list) :      
-                    aux        = value
-                else :
-                    aux        = [value]
+                aux = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -152,10 +146,7 @@ class cxproperties(object) :
             self.sast_filter_severities = []
             value = config.value('cx-flow.filter-severity')
             if value :
-                if (type(value) is list) :      
-                    aux    = value
-                else :
-                    aux    = [value]
+                aux    = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -176,10 +167,7 @@ class cxproperties(object) :
             aux = []
             self.sast_filter_state = []
             if value :
-                if (type(value) is list) :      
-                    aux        = value
-                else :
-                    aux        = [value]
+                aux        = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -197,10 +185,7 @@ class cxproperties(object) :
         if config.haskey('cx-flow.filter-category') :
             value = config.value('cx-flow.filter-category')
             if value :
-                if (type(value) is list) :      
-                    self.sast_filter_categories    = value
-                else :
-                    self.sast_filter_categories    = [value]
+                self.sast_filter_categories    = self.__process_param_list(value)
                 # String and lowercase everything
                 self.sast_filter_categories = [str(x).lower() for x in self.sast_filter_categories]
                 if len(self.sast_filter_categories) == 0 :
@@ -210,10 +195,7 @@ class cxproperties(object) :
         if config.haskey('cx-flow.filter-cwe') :
             value = config.value('cx-flow.filter-cwe')
             if value :
-                if (type(value) is list) :      
-                    self.sast_filter_cwes          = value
-                else :
-                    self.sast_filter_cwes          = [value]
+                self.sast_filter_cwes          = self.__process_param_list(value)
                 # String and lowercase everything
                 self.sast_filter_cwes = [str(x).lower() for x in self.sast_filter_cwes]
                 if len(self.sast_filter_cwes) == 0 :
@@ -232,10 +214,7 @@ class cxproperties(object) :
             self.kics_filter_severities = []
             value = config.value('kics.filter-severity')
             if value :
-                if (type(value) is list) :      
-                    aux    = value
-                else :
-                    aux    = [value]
+                aux    = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -256,10 +235,7 @@ class cxproperties(object) :
             aux = []
             self.kics_filter_state = []
             if value :
-                if (type(value) is list) :      
-                    aux        = value
-                else :
-                    aux        = [value]
+                aux        = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -278,10 +254,7 @@ class cxproperties(object) :
         if config.haskey('kics.filter-category') :
             value = config.value('kics.filter-category')
             if value :
-                if (type(value) is list) :      
-                    self.kics_filter_categories    = value
-                else :
-                    self.kics_filter_categories    = [value]
+                self.kics_filter_categories    = self.__process_param_list(value)
                 # String and lowercase everything
                 self.kics_filter_categories = [str(x).lower() for x in self.kics_filter_categories]
                 if len(self.kics_filter_categories) == 0 :
@@ -298,10 +271,7 @@ class cxproperties(object) :
             self.sca_filter_severities = []
             value = config.value('sca.filter-severity')
             if value :
-                if (type(value) is list) :      
-                    aux    = value
-                else :
-                    aux    = [value]
+                aux    = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -322,10 +292,7 @@ class cxproperties(object) :
             aux = []
             self.sca_filter_state = []
             if value :
-                if (type(value) is list) :      
-                    aux        = value
-                else :
-                    aux        = [value]
+                aux        = self.__process_param_list(value)
                 # String and lowercase everything
                 for xvalue in aux :
                     xvalue = str(xvalue).lower()
@@ -342,10 +309,7 @@ class cxproperties(object) :
         # Have SCA score filter ?
         if config.haskey('sca.filter-score') :
             value = config.value('sca.filter-score')
-            if (type(value) is int) or (type(value) is float) :      
-                self.sca_filter_cvsscore      = value
-            else :
-                self.sca_filter_cvsscore      = None
+            self.sca_filter_cvsscore      = self.__process_param_list(value)
         if self.sca_filter_cvsscore :
             if self.sca_filter_cvsscore > 10.0 :
                 self.sca_filter_cvsscore = 10.0
@@ -376,45 +340,41 @@ class cxproperties(object) :
         
         aux = None
         if config.haskey('cx-flow.thresholds') :
-            aux = config.value('cx-flow.thresholds')
-        if aux and (type(aux) is list) and len(aux) > 0 :
-            for ts in aux :
-                tskey   = str(list(dict(ts).keys())[0]).lower()
-                tsval   = ts[tskey] 
-                if tsval and int(tsval) > 0 :
-                    if tskey == 'new' :
-                        self.sast_threshold_new         = int(tsval)
-                    elif tskey == 'critical' :
-                        self.sast_threshold_critical    = int(tsval)
-                    elif tskey == 'high' : 
-                        self.sast_threshold_high        = int(tsval)
-                    elif tskey == 'medium' :
-                        self.sast_threshold_medium      = int(tsval)
-                    elif tskey == 'low' :
-                        self.sast_threshold_low         = int(tsval)
+            aux = self.__process_thresholds_list( config.value('cx-flow.thresholds') )
+        for ts in aux :
+            tskey   = ts['k']
+            tsval   = ts['v'] 
+            if tskey == 'new' :
+                self.sast_threshold_new         = int(tsval)
+            elif tskey == 'critical' :
+                self.sast_threshold_critical    = int(tsval)
+            elif tskey == 'high' : 
+                self.sast_threshold_high        = int(tsval)
+            elif tskey == 'medium' :
+                self.sast_threshold_medium      = int(tsval)
+            elif tskey == 'low' :
+                self.sast_threshold_low         = int(tsval)
+                
 
         # Have KICS thresholds ?
         aux = None
         if config.haskey('kics.thresholds') :
-            aux = config.value('kics.thresholds')
-        if aux and (type(aux) is list) and len(aux) > 0 :
-            for ts in aux :
-                tskey   = str(list(dict(ts).keys())[0]).lower()
-                tsval   = ts[tskey] 
-                if tsval and int(tsval) > 0 :
-                    if tskey == 'new' :
-                        self.kics_threshold_new         = int(tsval)
-                    elif tskey == 'critical' :
-                        self.kics_threshold_critical    = int(tsval)
-                    elif tskey == 'high' : 
-                        self.kics_threshold_high        = int(tsval)
-                    elif tskey == 'medium' :
-                        self.kics_threshold_medium      = int(tsval)
-                    elif tskey == 'low' :
-                        self.kics_threshold_low         = int(tsval)
+            aux = self.__process_thresholds_list( config.value('kics.thresholds') )
+        for ts in aux :
+            tskey   = ts['k']
+            tsval   = ts['v'] 
+            if tskey == 'new' :
+                self.kics_threshold_new         = int(tsval)
+            elif tskey == 'critical' :
+                self.kics_threshold_critical    = int(tsval)
+            elif tskey == 'high' : 
+                self.kics_threshold_high        = int(tsval)
+            elif tskey == 'medium' :
+                self.kics_threshold_medium      = int(tsval)
+            elif tskey == 'low' :
+                self.kics_threshold_low         = int(tsval)
 
-
-        # Have SCA thresholds ?
+        # Have SCA thresholds-score ?
         if config.haskey('sca.thresholds-score') :
             value = config.value('sca.thresholds-score')
             if (type(value) is int) or (type(value) is float) :      
@@ -425,26 +385,26 @@ class cxproperties(object) :
             if self.sca_threshold_score > 10.0 :
                 self.sca_threshold_score = 10.0
 
+        # Have SCA thresholds ?
         aux = None
         if config.haskey('sca.thresholds') :
-            aux = config.value('sca.thresholds')
+            aux = self.__process_thresholds_list( config.value('sca.thresholds') )
         elif config.haskey('sca.thresholds-severity') :
-            aux = config.value('sca.thresholds-severity')
-        if aux and (type(aux) is list) and len(aux) > 0 :
-            for ts in aux :
-                tskey   = str(list(dict(ts).keys())[0]).lower()
-                tsval   = ts[tskey] 
-                if tsval and int(tsval) > 0 :
-                    if tskey == 'new' :
-                        self.sca_threshold_new          = int(tsval)
-                    elif tskey == 'critical' :
-                        self.sca_threshold_critical     = int(tsval)
-                    elif tskey == 'high' : 
-                        self.sca_threshold_high         = int(tsval)
-                    elif tskey == 'medium' :
-                        self.sca_threshold_medium       = int(tsval)
-                    elif tskey == 'low' :
-                        self.sca_threshold_low          = int(tsval)
+            aux = self.__process_thresholds_list( config.value('sca.thresholds-severity') )
+        for ts in aux :
+            tskey   = ts['k']
+            tsval   = ts['v'] 
+            if tskey == 'new' :
+                self.sca_threshold_new          = int(tsval)
+            elif tskey == 'critical' :
+                self.sca_threshold_critical     = int(tsval)
+            elif tskey == 'high' : 
+                self.sca_threshold_high         = int(tsval)
+            elif tskey == 'medium' :
+                self.sca_threshold_medium       = int(tsval)
+            elif tskey == 'low' :
+                self.sca_threshold_low          = int(tsval)
+                        
 
     def has_thresholds(self) :
         if self.sast_threshold_new or self.sast_threshold_critical or self.sast_threshold_high or self.sast_threshold_medium or self.sast_threshold_low or \
@@ -453,5 +413,63 @@ class cxproperties(object) :
             return True
         else :
             return False
+        
+        
+    def __process_param_list(self, value) :
+        if not value :
+            return None
+        values = []
+        if (type(value) is list) :
+            values  = value
+        elif (type(value) is str) :
+            aux = str(value).strip()
+            if aux.startswith('[') and aux.endswith(']') :
+                aux = aux[1:-1]
+            if ';' in aux :
+                values = aux.split(';')
+            else :
+                values = aux.split(',')
+        else :
+            # Fallback, this may not work
+            values = [value]
+        if len(values) == 0 :
+            values = None
+        return values
+        
 
+    def __process_thresholds_list(self, value) :
+        if not value :
+            return None
+        values = []
+        if (type(value) is list) :
+            for ts in value :
+                tskey   = str(list(dict(ts).keys())[0]).lower()
+                tsval   = ts[tskey] 
+                if tsval and int(tsval) > 0 :
+                    values.append( { 'k': tskey, 'v': tsval } )
+        elif (type(value) is str)  :
+            aux = str(value).lower().strip()
+            if aux.startswith('[') and aux.endswith(']') :
+                aux = aux[1:-1]
+            if ';' in aux :
+                auxe = aux.split(';')
+            else :
+                auxe = aux.split(',')
+            for auxee in auxe :
+                if ':' in auxee :
+                    taux = auxee.split(':')
+                elif ' ' in auxee :
+                    taux = auxee.split(' ')
+                elif '=' in auxee :
+                    taux = auxee.split('=')
+                else :
+                    taux = []
+                if len(taux) == 2 :
+                    tskey = taux[0].strip()
+                    tsval = taux[1].strip()
+                if tsval and int(tsval) > 0 :
+                    values.append( { 'k': tskey, 'v': tsval } )
+        if len(values) == 0 :
+            values = None
+        return values
 

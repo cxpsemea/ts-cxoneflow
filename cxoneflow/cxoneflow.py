@@ -6,6 +6,7 @@ from datetime import datetime
 from cxloghandler import cxlogger
 from baserunner import baserunner
 from cxoneconn import cxoneconn
+from src.cxconfigdefaults import cxconfigdefaults
 from src.cxproperties import cxproperties
 from src.cxprocessscan import cxprocessor
 from src.cxjirafeedback import jirafeedback
@@ -32,7 +33,7 @@ class cxoneflow(baserunner) :
         resultstatus = 0
         errorcount = 0
         # Load configurations           
-        self.loadconfig( defaultname = 'application' )
+        self.loadconfig( defaults = cxconfigdefaults, defaultname = 'application' )
         # Load configurations
         cxparams = cxproperties( self.config )
         # Init log and verbose

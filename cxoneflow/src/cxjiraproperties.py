@@ -16,18 +16,18 @@ class jiraproperties(object) :
         self.proxyuser                      = config.value( 'jira.proxy_username' )
         self.proxyuser                      = config.value( 'jira.proxy_username' )
         self.proxypass                      = config.value( 'jira.proxy_password' )
-        self.httptimeout                    = config.value( 'jira.http-timeout', 20000 )
+        self.httptimeout                    = config.value( 'jira.http-timeout' )
         self.project                        = config.value( 'jira.project' )        
         self.projectid                      = None      
         self.issuetype                      = config.value( 'jira.issue-type', 'Bug' )
         self.issuetypeid                    = None
         self.labeltracker                   = config.value( 'jira.label-tracker', 'labels' )
-        self.issueprefix                    = config.value( 'jira.label-prefix' )
+        self.issueprefix                    = config.value( 'jira.issue-prefix' )
         if not self.issueprefix :
             self.issueprefix                = config.value( 'jira.issue-prefix', 'CX' )
-        self.issuepostfix                   = config.value( 'jira.label-postfix' )
+        self.issuepostfix                   = config.value( 'jira.issue-postfix' )
         if not self.issuepostfix :
-            self.issuepostfix               = config.value( 'jira.label-postfix', '' )
+            self.issuepostfix               = config.value( 'jira.issue-postfix', '' )
         self.descriptionprefix              = config.value( 'jira.description-prefix', '' )
         self.descriptionpostfix             = config.value( 'jira.description-postfix', '' )
         self.labeltracker                   = 'labels'
@@ -78,7 +78,49 @@ class jiraproperties(object) :
         self.issuefieldskey                 = 'key'     # To be checked after connect, JIRA Cloud has 'key', JIRA Server as 'fieldId'
         # Fields defined in config
         self.__fields                       = config.value( 'jira.fields' )
+        self.__processcmdlinefields()
         self.fields                         = []        # To be filled with processfields call
+
+
+    def __processcmdlinefields(self) :
+        # Process fields in the command line in the form:
+        # --jira.fields.0.type
+        # --jira.fields.0.name
+        # --jira.fields.0.jira-field-type
+        # --jira.fields.0.jira-field-name
+        # --jira.fields.0.jira-default-value
+        # --jira.fields.0.skip-update
+        # --jira.fields.0.offset
+        fpos: int = 0
+        fkey: str = 'jira.fields.' + str(fpos) + '.type'
+        found = config.haskey(fkey)
+        while found :
+            ftype       = config.value(fkey)
+            fname       = config.value('jira.fields.' + str(fpos) + '.name')
+            jiratype    = config.value('jira.fields.' + str(fpos) + '.jira-field-type')
+            jiraname    = config.value('jira.fields.' + str(fpos) + '.jira-field-name')
+            jiradefault = config.value('jira.fields.' + str(fpos) + '.jira-default-value')
+            jiraskip    = config.value('jira.fields.' + str(fpos) + '.skip-update')
+            jiraoffset  = config.value('jira.fields.' + str(fpos) + '.offset')
+            fdata = {}
+            if ftype :
+                fdata['type'] = ftype
+            if fname :
+                fdata['name'] = fname
+            if jiratype :
+                fdata['jira-field-type'] = jiratype
+            if jiraname :
+                fdata['jira-field-name'] = jiraname
+            if jiradefault :
+                fdata['jira-default-value'] = jiradefault
+            if jiraskip :
+                fdata['skip-update'] = jiraskip
+            if jiraoffset :
+                fdata['offset'] = jiraoffset 
+            list(self.__fields).append(fdata)
+            fpos += 1
+            fkey: str = 'jira.fields.' + str(fpos) + '.type'
+            found = config.haskey(fkey)
 
 
     def __adjustformatmasks(self) :
