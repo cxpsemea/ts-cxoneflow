@@ -22,12 +22,12 @@ class jiraproperties(object) :
         self.issuetype                      = config.value( 'jira.issue-type', 'Bug' )
         self.issuetypeid                    = None
         self.labeltracker                   = config.value( 'jira.label-tracker', 'labels' )
-        self.issueprefix                    = config.value( 'jira.label-prefix' )
+        self.issueprefix                    = config.value( 'jira.issue-prefix' )
         if not self.issueprefix :
             self.issueprefix                = config.value( 'jira.issue-prefix', 'CX' )
-        self.issuepostfix                   = config.value( 'jira.label-postfix' )
+        self.issuepostfix                   = config.value( 'jira.issue-postfix' )
         if not self.issuepostfix :
-            self.issuepostfix               = config.value( 'jira.label-postfix', '' )
+            self.issuepostfix               = config.value( 'jira.issue-postfix', '' )
         self.descriptionprefix              = config.value( 'jira.description-prefix', '' )
         self.descriptionpostfix             = config.value( 'jira.description-postfix', '' )
         self.labeltracker                   = 'labels'
