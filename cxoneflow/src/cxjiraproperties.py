@@ -78,11 +78,11 @@ class jiraproperties(object) :
         self.issuefieldskey                 = 'key'     # To be checked after connect, JIRA Cloud has 'key', JIRA Server as 'fieldId'
         # Fields defined in config
         self.__fields                       = config.value( 'jira.fields' )
-        self.__processcmdlinefields()
+        self.__processcmdlinefields(config)
         self.fields                         = []        # To be filled with processfields call
 
 
-    def __processcmdlinefields(self) :
+    def __processcmdlinefields(self, config: config) :
         # Process fields in the command line in the form:
         # --jira.fields.0.type
         # --jira.fields.0.name

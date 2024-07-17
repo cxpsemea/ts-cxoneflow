@@ -309,7 +309,10 @@ class cxproperties(object) :
         # Have SCA score filter ?
         if config.haskey('sca.filter-score') :
             value = config.value('sca.filter-score')
-            self.sca_filter_cvsscore      = self.__process_param_list(value)
+            if (type(value) is int) or (type(value) is float) :      
+                self.sca_filter_cvsscore      = value
+            else :
+                self.sca_filter_cvsscore      = None
         if self.sca_filter_cvsscore :
             if self.sca_filter_cvsscore > 10.0 :
                 self.sca_filter_cvsscore = 10.0
@@ -341,38 +344,40 @@ class cxproperties(object) :
         aux = None
         if config.haskey('cx-flow.thresholds') :
             aux = self.__process_thresholds_list( config.value('cx-flow.thresholds') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.sast_threshold_new         = int(tsval)
-            elif tskey == 'critical' :
-                self.sast_threshold_critical    = int(tsval)
-            elif tskey == 'high' : 
-                self.sast_threshold_high        = int(tsval)
-            elif tskey == 'medium' :
-                self.sast_threshold_medium      = int(tsval)
-            elif tskey == 'low' :
-                self.sast_threshold_low         = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.sast_threshold_new         = int(tsval)
+                elif tskey == 'critical' :
+                    self.sast_threshold_critical    = int(tsval)
+                elif tskey == 'high' : 
+                    self.sast_threshold_high        = int(tsval)
+                elif tskey == 'medium' :
+                    self.sast_threshold_medium      = int(tsval)
+                elif tskey == 'low' :
+                    self.sast_threshold_low         = int(tsval)
                 
 
         # Have KICS thresholds ?
         aux = None
         if config.haskey('kics.thresholds') :
             aux = self.__process_thresholds_list( config.value('kics.thresholds') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.kics_threshold_new         = int(tsval)
-            elif tskey == 'critical' :
-                self.kics_threshold_critical    = int(tsval)
-            elif tskey == 'high' : 
-                self.kics_threshold_high        = int(tsval)
-            elif tskey == 'medium' :
-                self.kics_threshold_medium      = int(tsval)
-            elif tskey == 'low' :
-                self.kics_threshold_low         = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.kics_threshold_new         = int(tsval)
+                elif tskey == 'critical' :
+                    self.kics_threshold_critical    = int(tsval)
+                elif tskey == 'high' : 
+                    self.kics_threshold_high        = int(tsval)
+                elif tskey == 'medium' :
+                    self.kics_threshold_medium      = int(tsval)
+                elif tskey == 'low' :
+                    self.kics_threshold_low         = int(tsval)
 
         # Have SCA thresholds-score ?
         if config.haskey('sca.thresholds-score') :
@@ -391,19 +396,20 @@ class cxproperties(object) :
             aux = self.__process_thresholds_list( config.value('sca.thresholds') )
         elif config.haskey('sca.thresholds-severity') :
             aux = self.__process_thresholds_list( config.value('sca.thresholds-severity') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.sca_threshold_new          = int(tsval)
-            elif tskey == 'critical' :
-                self.sca_threshold_critical     = int(tsval)
-            elif tskey == 'high' : 
-                self.sca_threshold_high         = int(tsval)
-            elif tskey == 'medium' :
-                self.sca_threshold_medium       = int(tsval)
-            elif tskey == 'low' :
-                self.sca_threshold_low          = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.sca_threshold_new          = int(tsval)
+                elif tskey == 'critical' :
+                    self.sca_threshold_critical     = int(tsval)
+                elif tskey == 'high' : 
+                    self.sca_threshold_high         = int(tsval)
+                elif tskey == 'medium' :
+                    self.sca_threshold_medium       = int(tsval)
+                elif tskey == 'low' :
+                    self.sca_threshold_low          = int(tsval)
                         
 
     def has_thresholds(self) :
