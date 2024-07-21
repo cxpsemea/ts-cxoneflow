@@ -34,13 +34,13 @@ class jiraproperties(object) :
         self.applabelprefix                 = 'app'
         self.ownerlabelprefix               = 'owner'
         self.repolabelprefix                = 'repo'
-        self.branchlabelprefix              = 'repo'
+        self.branchlabelprefix              = 'branch'
         self.falsepositivelabel             = 'false-positive'
         self.falsepositivestatus            = 'FALSE-POSITIVE'
         self.maxjqlresults                  = 50
         self.updatecomment                  = config.value( 'jira.update-comment', False )
         self.updatecommentvalue             = 'Issue still remains'
-        self.priorities                     = {}
+        self.priorities                     = { 'CRITICAL': 'Highest', 'HIGH': 'High', 'MEDIUM': 'Medium', 'LOW': 'Low', 'INFO': 'Lowest' }
         if config.haskey('jira.priorities.Critical') :
             self.priorities['CRITICAL'] = config.value( 'jira.priorities.Critical' ) 
         if config.haskey('jira.priorities.High') :
@@ -65,11 +65,14 @@ class jiraproperties(object) :
         if aux :
             for status in aux :
                 self.closedstatus.append( str(status).lower() )
-        # Summary formats
+        # Summary formats (the JIRA ticket keys)
         self.sastissuesummaryformat         = config.value( 'jira.sast-issue-summary-format', '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]' )
         self.sastissuesummarybranchformat   = config.value( 'jira.sast-issue-summary-branch-format', '[PREFIX] [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]' )
-        self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO][POSTFIX]' )
-        self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO].[BRANCH][POSTFIX]' )
+        # self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO][POSTFIX]' )
+        # self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO].[BRANCH][POSTFIX]' )
+        self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format', '[PREFIX] : [VULNERABILITY] in [REPO]-[PACKAGE] and [VERSION] @ [POSTFIX]' )        
+        self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format', '[PREFIX] : [VULNERABILITY] in [REPO]-[PACKAGE] and [VERSION] @ [BRANCH][POSTFIX]' )
+        
         self.kicsissuesummaryformat         = config.value( 'jira.kics-issue-summary-format', '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME][POSTFIX]' )
         self.kicsissuesummarybranchformat   = config.value( 'jira.kics-issue-summary-branch-format', '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]' )
         self.__adjustformatmasks()

@@ -10,6 +10,8 @@ from src.cxconfigdefaults import cxconfigdefaults
 from src.cxproperties import cxproperties
 from src.cxprocessscan import cxprocessor
 from src.cxjirafeedback import jirafeedback
+from src.dto.cxcounters import *
+from src.dto.cxscan import *
 
 
 # Accepted bug trackers
@@ -34,8 +36,6 @@ class cxoneflow(baserunner) :
         errorcount = 0
         # Load configurations           
         self.loadconfig( defaults = cxconfigdefaults, defaultname = 'application' )
-        # Load configurations
-        cxparams = cxproperties( self.config )
         # Init log and verbose
         cxlogger.activate( verbose = True, logging = True, debug = False, logspath = self.config.logsfolder )
         # To compute duration
@@ -51,9 +51,12 @@ class cxoneflow(baserunner) :
             cxlogger.verbose( 'Version: ' + self.config.value('version') )
             cxlogger.verbose( '============================================================' )
             cxlogger.verbose( 'Date: ' + dtini.strftime('%d-%m-%Y %H:%M:%S') )
+            
+            # Load configurations
+            cxlogger.verbose( 'Processing parameters')
+            cxparams = cxproperties( self.config )
 
             # Check for scan id mandatory input param
-
             if not cxparams.scanid :
                 raise Exception( 'Scan id was not supplyed')
             cxlogger.verbose( 'Scan id: ' + cxparams.scanid )

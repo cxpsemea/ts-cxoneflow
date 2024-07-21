@@ -14,7 +14,7 @@ cxconfigdefaults = {
         "filter-severity": [ "Critical", "High", "Medium" ],
         "filter-category": None,
         "filter-cwe": None,
-        "filter-status": [ "Urgent", "Confirmed", "Proposed Not Exploitable" ],
+        "filter-status": None,
         "mitre-url": "https://cwe.mitre.org/data/definitions/%s.html",
         "wiki-url": None,
         "break-build": None,
@@ -45,8 +45,8 @@ cxconfigdefaults = {
     },
     "sca": {
         "filter-severity": [ "Critical", "High", "Medium" ],
-        "filter-status": [ "Urgent", "Confirmed", "Proposed Not Exploitable" ],
-        "filter-score": 9.0,
+        "filter-status": None,
+        "filter-score": None,
         "filter-dependency-type": None,
         "filter-ignore-dev-test": False,
         "filter-policy-violation": False,
@@ -58,11 +58,11 @@ cxconfigdefaults = {
             {"medium": None},
             {"low": None}
         ],
-        "thresholds-score": 0.0        
+        "thresholds-score": None        
     },
     "kics": {
         "filter-severity": [ "Critical", "High", "Medium" ],
-        "filter-status": [ "Urgent", "Confirmed", "Proposed Not Exploitable" ],
+        "filter-status": None,
         "filter-category": None,
         "thresholds": [
             {"new": None},

@@ -129,8 +129,8 @@ class cxproperties(object) :
                     if xvalue == 'iac' :
                         xvalue = 'kics'
                     self.filter_scanners.append(xvalue)
-                if len(self.filter_scanners) == 0 :
-                    self.filter_scanners = None
+            if len(self.filter_scanners) == 0 :
+                self.filter_scanners = None
         # If empty, use scanners SAST and SCA only, for compatibility
         if not self.filter_scanners :
             self.filter_scanners      = ['sast','sca']    # ['sast','sca','kics']
@@ -153,8 +153,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.sast_filter_severities.append(xvalue)
-                if len(self.sast_filter_severities) == 0 :
-                    self.sast_filter_severities = None
+            if len(self.sast_filter_severities) == 0 :
+                self.sast_filter_severities = None
 
         # Have SAST state filters ?
         # TO_VERIFY
@@ -178,8 +178,8 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.sast_filter_state.append(xvalue)
-                if len(self.sast_filter_state) == 0 :
-                    self.sast_filter_state = None
+            if len(self.sast_filter_state) == 0 :
+                self.sast_filter_state = None
 
         # Have SAST category filters ?
         if config.haskey('cx-flow.filter-category') :
@@ -201,8 +201,6 @@ class cxproperties(object) :
                 if len(self.sast_filter_cwes) == 0 :
                     self.sast_filter_cwes = None
 
-
-
         # Have KICS severity filters ?
         # CRITICAL
         # HIGH
@@ -221,8 +219,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.kics_filter_severities.append(xvalue)
-                if len(self.kics_filter_severities) == 0 :
-                    self.kics_filter_severities = None
+            if len(self.kics_filter_severities) == 0 :
+                self.kics_filter_severities = None
 
         # Have KICS state filters ?
         # TO_VERIFY
@@ -246,8 +244,8 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.kics_filter_state.append(xvalue)
-                if len(self.kics_filter_state) == 0 :
-                    self.kics_filter_state = None
+            if len(self.kics_filter_state) == 0 :
+                self.kics_filter_state = None
 
 
         # Have KICS category filters ?
@@ -278,8 +276,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.sca_filter_severities.append(xvalue)
-                if len(self.sca_filter_severities) == 0 :
-                    self.sca_filter_severities = None
+            if len(self.sca_filter_severities) == 0 :
+                self.sca_filter_severities = None
 
         # Have SCA state filters ?
         # TO_VERIFY
@@ -303,8 +301,8 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.sca_filter_state.append(xvalue)
-                if len(self.sca_filter_state) == 0 :
-                    self.sca_filter_state = None
+            if len(self.sca_filter_state) == 0 :
+                self.sca_filter_state = None
       
         # Have SCA score filter ?
         if config.haskey('sca.filter-score') :
