@@ -27,6 +27,8 @@ Below the list of all configuration options available, in their different sectio
 |--repo-url|Repository URL|
 |--branch|Repository branch name|
 |--cx-project|CXONE project name|
+|--cx-flow.legacymode|When "true", the default, manages feedback tickets with CxFlow compatibility. Otherwise uses CxOne feed-back apps model|
+|--cx-flow.contentstyle|How ticket contents are filled. Options are "legacy" or "cxone". By default, it follows the "legacymode" flag|
 |--cx-flow.bug-tracker|Currentry, only JIRA is supported|
 |--cx-flow.mitre-url|Url for mitre documentation relative to vulnerabilities|
 |--cx-flow.wiki-url|Url for wiki documentation relative to vulnerabilities|

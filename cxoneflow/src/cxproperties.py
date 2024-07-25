@@ -33,6 +33,8 @@ class cxproperties(object) :
         self.application                = config.value( 'app' )
         self.namespace                  = config.value( 'namespace' )
         self.repository                 = config.value( 'repository' )
+        if not self.repository :
+            self.repository             = config.value( 'repo-name' )
         self.repo_url                   = config.value( 'repo-url' )
         self.branch                     = config.value( 'branch' )
         self.cxproject                  = config.value( 'cx-project' )            
@@ -47,6 +49,19 @@ class cxproperties(object) :
             self.cxurl = str(self.cxurl).rstrip('/')
         self.mitre_url                  = config.value('cx-flow.mitre-url')     #mitre-url: https://cwe.mitre.org/data/definitions/%s.html
         self.wiki_url                   = config.value('cx-flow.wiki-url')      #wiki-url: https://custodela.atlassian.net/wiki/spaces/AS/pages/79462432/Remediation+Guidance
+        
+        # Legacy mode
+        # -----------
+        # - True    tickets titles (descriptions) are CxFlow compatible (legacy)
+        # - False   tickets titles (descriptions) are CxOne Feedback Apps compatible
+        self.legacymode                 = config.value('cx-flow.legacymode', True)
+        # How tickets contents are filled. by default, they folow legacymode
+        self.contentstyle               = config.value('cx-flow.contentstyle')
+        if not self.contentstyle :
+            if self.legacymode :
+                self.contentstyle = 'legacy'
+            else :
+                self.contentstyle = 'cxone'
 
         # Global settings
         # ---------------

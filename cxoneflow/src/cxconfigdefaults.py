@@ -20,7 +20,7 @@ cxconfigdefaults = {
         "break-build": None,
         "disable-break-build": None,
         "branches": None,
-        "enabled-vulnerability-scanners": [ "sca", "sast", "kics" ],
+        "enabled-vulnerability-scanners": None,
         "thresholds": [
             {"new": None},
             {"critical": None},

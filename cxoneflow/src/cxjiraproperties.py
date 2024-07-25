@@ -7,6 +7,12 @@ from config import config
 class jiraproperties(object) :
 
     def __init__(self, config: config) :
+        # Arrange summary formats according to legacymode
+        # -----------------------------------------------
+        # - True    tickets descriptions and labels are CxFlow compatible (legacy)
+        # - False   tickets descriptions and labels are CxOne Feedback Apps compatible
+        legacymode = config.value('cx-flow.legacymode', True)
+        
         self.url                            = config.value( 'jira.url' )
         self.cloud                          = config.value( 'jira.cloud', True )
         self.verify_ssl                     = config.value( 'jira.verify_ssl', True )
@@ -23,11 +29,10 @@ class jiraproperties(object) :
         self.issuetypeid                    = None
         self.labeltracker                   = config.value( 'jira.label-tracker', 'labels' )
         self.issueprefix                    = config.value( 'jira.issue-prefix' )
-        if not self.issueprefix :
-            self.issueprefix                = config.value( 'jira.issue-prefix', 'CX' )
-        self.issuepostfix                   = config.value( 'jira.issue-postfix' )
-        if not self.issuepostfix :
-            self.issuepostfix               = config.value( 'jira.issue-postfix', '' )
+        self.issueprefix                    = config.value( 'jira.issue-prefix', '' )
+        if not self.issueprefix and legacymode :
+            self.issueprefix                = 'CX'
+        self.issuepostfix                   = config.value( 'jira.issue-postfix', '' )
         self.descriptionprefix              = config.value( 'jira.description-prefix', '' )
         self.descriptionpostfix             = config.value( 'jira.description-postfix', '' )
         self.labeltracker                   = 'labels'
@@ -35,6 +40,7 @@ class jiraproperties(object) :
         self.ownerlabelprefix               = 'owner'
         self.repolabelprefix                = 'repo'
         self.branchlabelprefix              = 'branch'
+        self.projectlabelprefix             = 'project'
         self.falsepositivelabel             = 'false-positive'
         self.falsepositivestatus            = 'FALSE-POSITIVE'
         self.maxjqlresults                  = 50
@@ -65,16 +71,48 @@ class jiraproperties(object) :
         if aux :
             for status in aux :
                 self.closedstatus.append( str(status).lower() )
+                
         # Summary formats (the JIRA ticket keys)
-        self.sastissuesummaryformat         = config.value( 'jira.sast-issue-summary-format', '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]' )
-        self.sastissuesummarybranchformat   = config.value( 'jira.sast-issue-summary-branch-format', '[PREFIX] [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]' )
-        # self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO][POSTFIX]' )
-        # self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format', '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPO].[BRANCH][POSTFIX]' )
-        self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format', '[PREFIX] : [VULNERABILITY] in [REPO]-[PACKAGE] and [VERSION] @ [POSTFIX]' )        
-        self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format', '[PREFIX] : [VULNERABILITY] in [REPO]-[PACKAGE] and [VERSION] @ [BRANCH][POSTFIX]' )
+        self.sastissuesummaryformat         = config.value( 'jira.sast-issue-summary-format' )
+        self.sastissuesummarybranchformat   = config.value( 'jira.sast-issue-summary-branch-format' )
+        self.scaissuesummaryformat          = config.value( 'jira.sca-issue-summary-format' )
+        self.scaissuesummarybranchformat    = config.value( 'jira.sca-issue-summary-branch-format' )
+        self.kicsissuesummaryformat         = config.value( 'jira.kics-issue-summary-format' )
+        self.kicsissuesummarybranchformat   = config.value( 'jira.kics-issue-summary-branch-format' )
         
-        self.kicsissuesummaryformat         = config.value( 'jira.kics-issue-summary-format', '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME][POSTFIX]' )
-        self.kicsissuesummarybranchformat   = config.value( 'jira.kics-issue-summary-branch-format', '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]' )
+        if legacymode :
+            # SAST
+            if not self.sastissuesummaryformat :
+                self.sastissuesummaryformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
+            if not self.sastissuesummarybranchformat :
+                self.sastissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]'
+            # SCA
+            if not self.scaissuesummaryformat :
+                self.scaissuesummaryformat = '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPOSITORY][POSTFIX]'
+            if not self.scaissuesummarybranchformat :
+                self.scaissuesummarybranchformat = '[PREFIX] : [VULNERABILITY] in [PACKAGE] and [VERSION] @ [REPOSITORY].[BRANCH][POSTFIX]'
+            # KICS
+            if not self.kicsissuesummaryformat :
+                self.kicsissuesummaryformat = '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME][POSTFIX]'
+            if not self.kicsissuesummarybranchformat :
+                self.kicsissuesummarybranchformat = '[PREFIX]-KICS [VULNERABILITY] @ [FILENAME] [[BRANCH]][POSTFIX]'
+        else :
+            # SAST
+            if not self.sastissuesummaryformat :
+                self.sastissuesummaryformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
+            if not self.sastissuesummarybranchformat :
+                self.sastissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
+            # SCA
+            if not self.scaissuesummaryformat :
+                self.scaissuesummaryformat = '[PREFIX] [VULNERABILITY] @ [PACKAGE][POSTFIX]'
+            if not self.scaissuesummarybranchformat :
+                self.scaissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [PACKAGE][POSTFIX]'
+            # KICS
+            if not self.kicsissuesummaryformat :
+                self.kicsissuesummaryformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
+            if not self.kicsissuesummarybranchformat :
+                self.kicsissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
+        
         self.__adjustformatmasks()
         # Fields for project/issue type
         self.issuefields                    = None      # To be filled after connect

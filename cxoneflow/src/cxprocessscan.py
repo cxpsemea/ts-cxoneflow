@@ -63,7 +63,7 @@ class cxprocessor(baserunner) :
         # Check branch
         if self.cxparams.filter_branches :
             scanbranch = self.__scan.branch
-            go = scanbranch and scanbranch.lower() in self.fcxparams.filter_branches
+            go = scanbranch and scanbranch.lower() in self.cxparams.filter_branches
             if not go :
                 if scanbranch :
                     cxlogger.verbose( 'ABORTED: branch "' + scanbranch + '" not matching any observed branches ' + str(self.cxparams.filter_branches) )
@@ -72,7 +72,7 @@ class cxprocessor(baserunner) :
         # Check scanners
         if self.cxparams.filter_scanners :
             found = 0
-            statuses = self.__scan.statusDetails
+            statuses = self.__scan.statusdetails
             for status in statuses :
                 if status['name'].lower() in self.cxparams.filter_scanners :
                     found += 1
@@ -85,9 +85,9 @@ class cxprocessor(baserunner) :
 
     def __processscanresults( self, scanresults, thescanner ) :
 
-        sastresulturlmask = self.cxparams.cxurl + '/results/' + self.__scan.id + '/' + self.__scan.projectId + '/sast?result-id={resultid}'
-        scaresulturlmask  = self.cxparams.cxurl + '/results/' + self.__scan.projectId + '/' + self.__scan.id + '/sca?internalPath={resultid}'
-        kicsresulturlmask = self.cxparams.cxurl + '/results/' + self.__scan.id + '/' + self.__scan.projectId + '/kics?result-id={resultid}'
+        sastresulturlmask   = self.cxparams.cxurl + '/results/' + self.__scan.id + '/' + self.__scan.projectid + '/sast?result-id={resultid}'
+        scaresulturlmask    = self.cxparams.cxurl + '/results/' + self.__scan.projectid + '/' + self.__scan.id + '/sca?internalPath={resultid}'
+        kicsresulturlmask   = self.cxparams.cxurl + '/results/' + self.__scan.id + '/' + self.__scan.projectid + '/kics?result-id={resultid}'
         
         for result in scanresults :
             
@@ -175,9 +175,7 @@ class cxprocessor(baserunner) :
                     key = str(result['id']) + ' ' + str(result['data']['packageIdentifier'])
                     # Process it
                     cxresult = self.__results.findresult( scanner, key )
-                    if cxresult :
-                        cxresult.addoccurence( result, scaresulturlmask )
-                    else :
+                    if not cxresult :
                         self.__results.addresult( scanner, key, result, scaresulturlmask, package )
             
             elif scanner == 'kics' and elegible :
