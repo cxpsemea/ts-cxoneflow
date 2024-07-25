@@ -33,6 +33,8 @@ class cxproperties(object) :
         self.application                = config.value( 'app' )
         self.namespace                  = config.value( 'namespace' )
         self.repository                 = config.value( 'repository' )
+        if not self.repository :
+            self.repository             = config.value( 'repo-name' )
         self.repo_url                   = config.value( 'repo-url' )
         self.branch                     = config.value( 'branch' )
         self.cxproject                  = config.value( 'cx-project' )            
@@ -47,6 +49,19 @@ class cxproperties(object) :
             self.cxurl = str(self.cxurl).rstrip('/')
         self.mitre_url                  = config.value('cx-flow.mitre-url')     #mitre-url: https://cwe.mitre.org/data/definitions/%s.html
         self.wiki_url                   = config.value('cx-flow.wiki-url')      #wiki-url: https://custodela.atlassian.net/wiki/spaces/AS/pages/79462432/Remediation+Guidance
+        
+        # Legacy mode
+        # -----------
+        # - True    tickets titles (descriptions) are CxFlow compatible (legacy)
+        # - False   tickets titles (descriptions) are CxOne Feedback Apps compatible
+        self.legacymode                 = config.value('cx-flow.legacymode', True)
+        # How tickets contents are filled. by default, they folow legacymode
+        self.contentstyle               = config.value('cx-flow.contentstyle')
+        if not self.contentstyle :
+            if self.legacymode :
+                self.contentstyle = 'legacy'
+            else :
+                self.contentstyle = 'cxone'
 
         # Global settings
         # ---------------
@@ -129,8 +144,8 @@ class cxproperties(object) :
                     if xvalue == 'iac' :
                         xvalue = 'kics'
                     self.filter_scanners.append(xvalue)
-                if len(self.filter_scanners) == 0 :
-                    self.filter_scanners = None
+            if len(self.filter_scanners) == 0 :
+                self.filter_scanners = None
         # If empty, use scanners SAST and SCA only, for compatibility
         if not self.filter_scanners :
             self.filter_scanners      = ['sast','sca']    # ['sast','sca','kics']
@@ -153,8 +168,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.sast_filter_severities.append(xvalue)
-                if len(self.sast_filter_severities) == 0 :
-                    self.sast_filter_severities = None
+            if len(self.sast_filter_severities) == 0 :
+                self.sast_filter_severities = None
 
         # Have SAST state filters ?
         # TO_VERIFY
@@ -178,8 +193,8 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.sast_filter_state.append(xvalue)
-                if len(self.sast_filter_state) == 0 :
-                    self.sast_filter_state = None
+            if len(self.sast_filter_state) == 0 :
+                self.sast_filter_state = None
 
         # Have SAST category filters ?
         if config.haskey('cx-flow.filter-category') :
@@ -201,8 +216,6 @@ class cxproperties(object) :
                 if len(self.sast_filter_cwes) == 0 :
                     self.sast_filter_cwes = None
 
-
-
         # Have KICS severity filters ?
         # CRITICAL
         # HIGH
@@ -221,8 +234,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.kics_filter_severities.append(xvalue)
-                if len(self.kics_filter_severities) == 0 :
-                    self.kics_filter_severities = None
+            if len(self.kics_filter_severities) == 0 :
+                self.kics_filter_severities = None
 
         # Have KICS state filters ?
         # TO_VERIFY
@@ -246,8 +259,8 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.kics_filter_state.append(xvalue)
-                if len(self.kics_filter_state) == 0 :
-                    self.kics_filter_state = None
+            if len(self.kics_filter_state) == 0 :
+                self.kics_filter_state = None
 
 
         # Have KICS category filters ?
@@ -278,8 +291,8 @@ class cxproperties(object) :
                     if xvalue == 'information' :
                         xvalue = 'info'
                     self.sca_filter_severities.append(xvalue)
-                if len(self.sca_filter_severities) == 0 :
-                    self.sca_filter_severities = None
+            if len(self.sca_filter_severities) == 0 :
+                self.sca_filter_severities = None
 
         # Have SCA state filters ?
         # TO_VERIFY
@@ -303,13 +316,16 @@ class cxproperties(object) :
                     if xvalue == 'not exploitable' :
                         xvalue = 'not_exploitable'
                     self.sca_filter_state.append(xvalue)
-                if len(self.sca_filter_state) == 0 :
-                    self.sca_filter_state = None
+            if len(self.sca_filter_state) == 0 :
+                self.sca_filter_state = None
       
         # Have SCA score filter ?
         if config.haskey('sca.filter-score') :
             value = config.value('sca.filter-score')
-            self.sca_filter_cvsscore      = self.__process_param_list(value)
+            if (type(value) is int) or (type(value) is float) :      
+                self.sca_filter_cvsscore      = value
+            else :
+                self.sca_filter_cvsscore      = None
         if self.sca_filter_cvsscore :
             if self.sca_filter_cvsscore > 10.0 :
                 self.sca_filter_cvsscore = 10.0
@@ -341,38 +357,40 @@ class cxproperties(object) :
         aux = None
         if config.haskey('cx-flow.thresholds') :
             aux = self.__process_thresholds_list( config.value('cx-flow.thresholds') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.sast_threshold_new         = int(tsval)
-            elif tskey == 'critical' :
-                self.sast_threshold_critical    = int(tsval)
-            elif tskey == 'high' : 
-                self.sast_threshold_high        = int(tsval)
-            elif tskey == 'medium' :
-                self.sast_threshold_medium      = int(tsval)
-            elif tskey == 'low' :
-                self.sast_threshold_low         = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.sast_threshold_new         = int(tsval)
+                elif tskey == 'critical' :
+                    self.sast_threshold_critical    = int(tsval)
+                elif tskey == 'high' : 
+                    self.sast_threshold_high        = int(tsval)
+                elif tskey == 'medium' :
+                    self.sast_threshold_medium      = int(tsval)
+                elif tskey == 'low' :
+                    self.sast_threshold_low         = int(tsval)
                 
 
         # Have KICS thresholds ?
         aux = None
         if config.haskey('kics.thresholds') :
             aux = self.__process_thresholds_list( config.value('kics.thresholds') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.kics_threshold_new         = int(tsval)
-            elif tskey == 'critical' :
-                self.kics_threshold_critical    = int(tsval)
-            elif tskey == 'high' : 
-                self.kics_threshold_high        = int(tsval)
-            elif tskey == 'medium' :
-                self.kics_threshold_medium      = int(tsval)
-            elif tskey == 'low' :
-                self.kics_threshold_low         = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.kics_threshold_new         = int(tsval)
+                elif tskey == 'critical' :
+                    self.kics_threshold_critical    = int(tsval)
+                elif tskey == 'high' : 
+                    self.kics_threshold_high        = int(tsval)
+                elif tskey == 'medium' :
+                    self.kics_threshold_medium      = int(tsval)
+                elif tskey == 'low' :
+                    self.kics_threshold_low         = int(tsval)
 
         # Have SCA thresholds-score ?
         if config.haskey('sca.thresholds-score') :
@@ -391,19 +409,20 @@ class cxproperties(object) :
             aux = self.__process_thresholds_list( config.value('sca.thresholds') )
         elif config.haskey('sca.thresholds-severity') :
             aux = self.__process_thresholds_list( config.value('sca.thresholds-severity') )
-        for ts in aux :
-            tskey   = ts['k']
-            tsval   = ts['v'] 
-            if tskey == 'new' :
-                self.sca_threshold_new          = int(tsval)
-            elif tskey == 'critical' :
-                self.sca_threshold_critical     = int(tsval)
-            elif tskey == 'high' : 
-                self.sca_threshold_high         = int(tsval)
-            elif tskey == 'medium' :
-                self.sca_threshold_medium       = int(tsval)
-            elif tskey == 'low' :
-                self.sca_threshold_low          = int(tsval)
+        if aux :
+            for ts in aux :
+                tskey   = ts['k']
+                tsval   = ts['v'] 
+                if tskey == 'new' :
+                    self.sca_threshold_new          = int(tsval)
+                elif tskey == 'critical' :
+                    self.sca_threshold_critical     = int(tsval)
+                elif tskey == 'high' : 
+                    self.sca_threshold_high         = int(tsval)
+                elif tskey == 'medium' :
+                    self.sca_threshold_medium       = int(tsval)
+                elif tskey == 'low' :
+                    self.sca_threshold_low          = int(tsval)
                         
 
     def has_thresholds(self) :

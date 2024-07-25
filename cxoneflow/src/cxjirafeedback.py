@@ -1,5 +1,4 @@
 
-
 import re
 from datetime import datetime
 from urllib import parse
@@ -9,24 +8,18 @@ from .basefeedback import basefeedback
 from .cxproperties import cxproperties
 from .cxjiraapicaller import cxjiraapi
 from .cxjiraproperties import jiraproperties 
-
+from .dto.cxcounters import *
+from .dto.cxscan import *
+from .dto.cxresults import *
 
 # Constants
 
 HTML_CRLF: str                          = '\r\n'
 
-JIRA_CX_PRODUCT                         = 'CXONE'
-JIRA_CX_LEGACY                          = 'CX'
-
-JIRA_ISSUE_LABEL_SAST: str              = 'scanner:SAST'
-JIRA_ISSUE_LABEL_SCA: str               = 'scanner:SCA'
-JIRA_ISSUE_LABEL_KICS: str              = 'scanner:KICS'
-
 JIRA_SCA_DEV_LABEL: str                 = 'DEV'
+JIRA_SCA_TEST_LABEL: str                = 'TEST'
 JIRA_SCA_PROD_LABEL: str                = 'PROD'
 
-JIRA_LABEL_FIELD_TYPE: str              = 'labels'
-JIRA_PRIORITY_FIELD_TYPE: str           = 'priority'
 JIRA_SECURITY_FIELD_TYPE: str           = 'security'
 JIRA_VALUE_FIELD_TYPE: str              = 'value'
 JIRA_NAME_FIELD_TYPE: str               = 'name'
@@ -35,23 +28,23 @@ JIRA_CHILD_FIELD_DELIMITER: str         = ';'
 
 JIRA_SAST_ISSUE_BODY_WITH_BRANCH: str   = '*SAST {}* issue exists @ *{}* in branch *{}*'
 JIRA_SAST_ISSUE_BODY: str               = '*SAST {}* issue exists @ *{}*'
-JIRA_KICS_ISSUE_BODY_WITH_BRANCH: str   = '*KICS {}* issue exists @ *{}* in branch *{}*'
-JIRA_KICS_ISSUE_BODY: str               = '*KICS {}* issue exists @ *{}*'
 JIRA_SCA_ISSUE_BODY_WITH_BRANCH: str    = '*SCA {} Vulnerable Package* issue exists @ *{}* in branch *{}*'
 JIRA_SCA_ISSUE_BODY: str                = '*SCA {} Vulnerable Package* issue exists @ *{}*'
+JIRA_KICS_ISSUE_BODY_WITH_BRANCH: str   = '*KICS {}* issue exists @ *{}* in branch *{}*'
+JIRA_KICS_ISSUE_BODY: str               = '*KICS {}* issue exists @ *{}*'
 
-JIRA_MAX_DESCRIPTION: int           = 32760
+JIRA_MAX_DESCRIPTION: int               = 32760
 
 
 
 class jirafeedback(basefeedback) :
 
 
-    def __init__(self, config: config, cxparams: cxproperties, scandata, resultdata ) :
+    def __init__(self, config: config, cxparams: cxproperties, scaninfo: cxscan, results: cxresults ) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
-        super().__init__(config, cxparams, scandata, resultdata)
+        super().__init__(config, cxparams, scaninfo, results)
 
 
     def __initialize(self) :
@@ -82,35 +75,28 @@ class jirafeedback(basefeedback) :
         self.jiraparams.issuefields   = self.jira.projectissuefields(self.jiraparams.projectid, self.jiraparams.issuetypeid )
         # Process fields mappings
         self.jiraparams.processfields()
-
-
-    def __retrievejiratickets( self, scanner: str ) :
-        # # Get existing tickets for scanner
-        # jiratickets = []
-        # Construct jql
-        jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + JIRA_CX_LEGACY + ' )'
-        if scanner == 'sast' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + JIRA_ISSUE_LABEL_SAST
-        elif scanner == 'sca' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + JIRA_ISSUE_LABEL_SCA
-        elif scanner == 'kics' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + JIRA_ISSUE_LABEL_KICS
-        # From params, Namespace/Repo/Branch provided
         
-        if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
-        # From params, only application and repo provided
-        elif self.cxparams.application and self.cxparams.repository  :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-        # From params, only application
-        elif self.cxparams.application :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-        # Get it
-        return self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
-
+        
+    def __intreferences(self) :
+        
+        # CxFlow compatible
+        if self.cxparams.legacymode :
+            # Labels
+            self.JIRA_CX_PRODUCT                         = 'CXONE'
+            self.JIRA_CX_LEGACY                          = 'CX'
+            self.JIRA_ISSUE_LABEL_SAST: str              = 'scanner:SAST'
+            self.JIRA_ISSUE_LABEL_SCA: str               = 'scanner:SCA'
+            self.JIRA_ISSUE_LABEL_KICS: str              = 'scanner:KICS'
+            
+        # CxOne feedback apps mode
+        else :
+            # Labels
+            self.JIRA_CX_PRODUCT                         = 'Checkmarx'
+            self.JIRA_CX_LEGACY                          = 'CX'
+            self.JIRA_ISSUE_LABEL_SAST: str              = 'SAST'
+            self.JIRA_ISSUE_LABEL_SCA: str               = 'SCA'
+            self.JIRA_ISSUE_LABEL_KICS: str              = 'IaC-Security'
+        
 
     def __getscuritylevel( self, jirafieldname: str, value: str ) :
         jira_field = next( filter( lambda el: el['name'] == jirafieldname or el[self.jiraparams.issuefieldskey] == jirafieldname, self.jiraparams.issuefields ), None )
@@ -121,49 +107,6 @@ class jirafeedback(basefeedback) :
                     if str(allowed_value).uppper() == value.upper() :
                         return allowed_value
         return None
-
-
-    def __getsummary( self, scanner: str, resultelement ) :
-        template        = ''
-        prefix          = self.jiraparams.issueprefix
-        postfix         = self.jiraparams.issuepostfix
-        # repository      = self.cxparams.repository if self.cxparams.repository else ''
-        branch          = self.cxparams.branch if self.cxparams.branch else ''
-
-        if scanner == 'sca' :
-            vulnerability   = resultelement['id']
-            packagename     = resultelement['packagename']
-            packageversion  = resultelement['packageversion']
-            packagerepo     = resultelement['packagerepository']
-            if branch :
-                template = self.jiraparams.scaissuesummarybranchformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, PACKAGE = packagename, VERSION = packageversion, REPO = packagerepo, BRANCH = branch, POSTFIX = postfix )
-            else :
-                template = self.jiraparams.scaissuesummaryformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, PACKAGE = packagename, VERSION = packageversion, REPO = packagerepo, POSTFIX = postfix )
-        elif scanner == 'kics' :
-            vulnerability = resultelement['queryname']
-            filename      = resultelement['filename']
-            if branch :
-                template = self.jiraparams.kicsissuesummarybranchformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, BRANCH = branch, POSTFIX = postfix )
-            else :
-                template = self.jiraparams.kicsissuesummaryformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, POSTFIX = postfix )
-        else :
-            vulnerability = resultelement['queryname']
-            filename      = resultelement['filename']
-            if branch :
-                template = self.jiraparams.sastissuesummarybranchformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, BRANCH = branch, POSTFIX = postfix )
-            else :
-                template = self.jiraparams.sastissuesummaryformat
-                summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, POSTFIX = postfix )
-
-        if len(summary) > 255 :
-            summary = summary[:254]
-
-        return str(summary)
 
 
 
@@ -213,24 +156,443 @@ class jirafeedback(basefeedback) :
 
 
 
-    def __constructfieldsmappings( self, scanner: str, resultelement, labels: list, existingjiraticket = None ) :
+    # Get existing JIRA tickets for scanner
+    def __retrievejiratickets( self, scanner: str ) :
+        # Construct jql
+        jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_LEGACY + ' )'
+        if scanner == 'sast' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SAST
+        elif scanner == 'sca' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SCA
+        elif scanner == 'kics' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
+        # CxFlow compatible
+        if self.cxparams.legacymode :
+            # From params, Namespace/Repo/Branch provided
+            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
+            # From params, only application and repo provided
+            elif self.cxparams.application and self.cxparams.repository  :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+            # From params, only application
+            elif self.cxparams.application :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+        else :
+            if self.scaninfo.branch :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch + '"'
+            if self.scaninfo.projectname :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
+    
+        # Get it all. It uses paged gets of self.jiraparams.maxjqlresults per pages
+        return self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
+
+
+
+    def __getsummary( self, scanner: str, ticket: cxresult ) :
+        template        = ''
+        prefix          = self.jiraparams.issueprefix
+        postfix         = self.jiraparams.issuepostfix
+        repository      = self.cxparams.repository if self.cxparams.repository else ''
+        branch          = self.cxparams.branch if self.cxparams.branch else ''
+        
+        if scanner == 'sast' :
+            cxsastticket: cxsastresult = ticket
+            vulnerability = cxsastticket.queryname
+            filename      = cxsastticket.filename
+            if self.cxparams.legacymode and filename.startswith( '/' ) :
+                filename = filename[1:]
+            if branch :
+                template = self.jiraparams.sastissuesummarybranchformat
+            else :
+                template = self.jiraparams.sastissuesummaryformat
+            summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, REPOSITORY = repository, BRANCH = branch, POSTFIX = postfix )
+        elif scanner == 'sca' :
+            cxscaticket: cxscaresult = ticket
+            vulnerability   = cxscaticket.id
+            packagename     = cxscaticket.packageid
+            packageversion  = None
+            if self.cxparams.legacymode :
+                aux = packagename.split('-')
+                if len(aux) > 1 :
+                    packageversion = aux.pop(len(aux) - 1)
+                    packagename = '-'.join(aux)
+            if branch :
+                template = self.jiraparams.scaissuesummarybranchformat
+            else :
+                template = self.jiraparams.scaissuesummaryformat
+            summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, PACKAGE = packagename, VERSION = packageversion, REPOSITORY = repository, BRANCH = branch, POSTFIX = postfix )
+        elif scanner == 'kics' :
+            cxkicsticket: cxkicsresult = ticket
+            vulnerability = cxkicsticket.queryname
+            filename      = cxkicsticket.filename
+            if self.cxparams.legacymode and filename.startswith( '/' ) :
+                filename = filename[1:]
+            if branch :
+                template = self.jiraparams.kicsissuesummarybranchformat
+            else :
+                template = self.jiraparams.kicsissuesummaryformat
+            summary  = template.format( PREFIX = prefix, VULNERABILITY = vulnerability, FILENAME = filename, REPOSITORY = repository, BRANCH = branch, POSTFIX = postfix )
+        if self.cxparams.legacymode and summary.endswith('@ ') :
+            summary = summary.lstrip()
+        else :
+            summary = summary.strip()
+        if len(summary) > 255 :
+            summary = summary[:254]
+        return str(summary)
+    
+    
+    
+    # Body constructed CxFlow legacy model
+    def __constructbody_legacy( self, scanner: str, ticket: cxresult ) :
+
+        body    = []
+
+        branch  = self.cxparams.branch if self.cxparams.branch else ''
+
+        if self.jiraparams.descriptionprefix :
+            body.append( self.jiraparams.descriptionprefix + HTML_CRLF )
+            
+        # First line and description
+        if scanner == 'sast' :
+            cxsastticket: cxsastresult = ticket
+            if branch :
+                body.append( JIRA_SAST_ISSUE_BODY_WITH_BRANCH.format( cxsastticket.queryname, cxsastticket.filename, branch ) + HTML_CRLF + HTML_CRLF )
+            else :
+                body.append( JIRA_SAST_ISSUE_BODY.format( cxsastticket.queryname, cxsastticket.filename ) + HTML_CRLF + HTML_CRLF )
+            if cxsastticket.description :
+                body.append( cxsastticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
+        elif scanner == 'sca' :
+            cxscaticket: cxscaresult = ticket
+            if branch :
+                body.append( JIRA_SCA_ISSUE_BODY_WITH_BRANCH.format( cxscaticket.severity.upper(), cxscaticket.packagename, branch ) + HTML_CRLF + HTML_CRLF )
+            else :
+                body.append( JIRA_SCA_ISSUE_BODY.format( cxscaticket.severity.upper(), cxscaticket.packagename ) + HTML_CRLF + HTML_CRLF )
+            if cxscaticket.description :
+                body.append( cxscaticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
+        elif scanner == 'kics' :
+            cxkicsticket: cxkicsresult = ticket
+            if branch :
+                body.append( JIRA_KICS_ISSUE_BODY_WITH_BRANCH.format( cxkicsticket.queryname, cxkicsticket.filename, branch ) + HTML_CRLF + HTML_CRLF )
+            else :
+                body.append( JIRA_KICS_ISSUE_BODY.format( cxkicsticket.queryname, cxkicsticket.filename ) + HTML_CRLF + HTML_CRLF )
+            if cxkicsticket.description :
+                body.append( cxkicsticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
+
+        ftext = self.cxparams.repo_url
+        if ftext and ('gitlab-ci-token' in ftext) and ('@' in ftext) :
+            repourl = ftext[:8] + ftext[ftext.find('@')+1:]
+        else :
+            repourl = ftext
+
+        cxprojectname: str  = self.cxparams.cxproject
+        if not cxprojectname :
+            cxprojectname = self.scaninfo.projectname
+
+        if self.cxparams.namespace :
+            body.append( '*Namespace:* ' + str(self.cxparams.namespace).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+        if self.cxparams.repository :
+            body.append( '*Repository:* ' + str(self.cxparams.repository).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+        if self.cxparams.branch :
+            body.append( '*Branch:* ' + str(self.cxparams.branch).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+        if repourl :
+            body.append( '*Repository Url:* ' + repourl + HTML_CRLF )
+        if self.cxparams.application :
+            body.append( '*Application:* ' + str(self.cxparams.application).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+        if cxprojectname :
+            body.append( '*Cx-Project:* ' + cxprojectname.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+        if ticket.highestseverity :
+            body.append( '*Severity:* ' + ticket.highestseverity + HTML_CRLF )
+ 
+        body.append( HTML_CRLF )
+        body.append( '*Additional Info*' + HTML_CRLF )
+        body.append( '----' + HTML_CRLF )
+        
+        if scanner == 'sast' :
+            # Construct references
+            if cxsastticket.cwe and cxsastticket.queryid :
+                advice_url = self.cxparams.cxurl + '/results/' + self.scaninfo.projectid + '/' + self.scaninfo.scanid + '/sast/description/' + str(cxsastticket.cwe) + '/' + str(cxsastticket.queryid)
+            else :
+                advice_url = None
+            if advice_url :
+                body.append( '[Recommended Fix|' + advice_url + ']' + HTML_CRLF )
+            if self.cxparams.wiki_url :
+                body.append( '[Guidance|' + self.cxparams.wiki_url + ']' + HTML_CRLF)
+            if self.cxparams.mitre_url and cxsastticket.cwe :
+                body.append( '[Mitre Details|' + self.cxparams.mitre_url % (str(cxsastticket.cwe)) + ']' + HTML_CRLF)
+            items_on  = []
+            items_off = []                
+            for item in cxsastticket.occurences :
+                if item.state.lower() == 'not_exploitable' :
+                    items_off.append( item.line )
+                else :
+                    items_on.append( item.line )
+                items_on.sort()
+                items_off.sort()
+                if len(items_on) > 0 :
+                    aux = []
+                    for item in items_on :
+                        aux.append(str(item))
+                    body.append( 'Lines: ' + ', '.join(aux) + HTML_CRLF)
+                if len(items_off) > 0 :
+                    aux = []
+                    for item in items_off :
+                        aux.append(str(item))
+                    body.append( 'Lines Marked Not Exploitable: ' + ', '.join(aux) + HTML_CRLF)
+            if cxsastticket.occurences[0].cxonelink :
+                body.append( '[Checkmarx|' + cxsastticket.occurences[0].cxonelink + ']' + HTML_CRLF)
+                    
+        elif scanner == 'sca' :
+            if cxscaticket.id :
+                body.append( 'Vulnerability ID: ' + cxscaticket.id + HTML_CRLF)
+            if cxscaticket.packagename :
+                body.append( 'Package Name: ' + cxscaticket.packagename.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxscaticket.packagerepository :
+                body.append( 'Package Repo: ' + cxscaticket.packagerepository.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxscaticket.cvss :
+                body.append( 'CVSS Score: ' + str(cxscaticket.cvss) + HTML_CRLF)
+            if cxscaticket.cve :
+                body.append( 'CVE: ' + str(cxscaticket.cve) + HTML_CRLF)
+            if cxscaticket.releasedate :
+                body.append( 'Publish Date: ' + cxscaticket.releasedate + HTML_CRLF)
+            if cxscaticket.packageversion :
+                body.append( 'Current Package Version: ' + cxscaticket.packageversion.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxscaticket.recommendedversion :
+                body.append( 'Remediation Upgrade Recommendation: ' + cxscaticket.recommendedversion.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxscaticket.newestversion :
+                body.append( 'Latest Package Version: ' + cxscaticket.newestversion.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxscaticket.packagerepository and cxscaticket.packagename and cxscaticket.packageversion :
+                url = self.cxparams.cxurl + '/sca/#/appsec-knowledge-center/package' + \
+                    parse.quote(cxscaticket.packagerepository, safe = '') + '/' + \
+                    parse.quote(cxscaticket.packagename, safe = '') + '/' + \
+                    parse.quote(cxscaticket.packageversion, safe = '')
+                body.append( '[Guidance|' + url + ']' + HTML_CRLF)
+            if cxscaticket.id.upper().startswith('CVE-') :
+                url = 'https://nvd.nist.gov/vuln/detail/' + cxscaticket.id.upper().strip()
+                body.append( '[Reference – NVD link|' + url + ']' + HTML_CRLF)
+            if cxscaticket.cxonelink :
+                body.append( '[Checkmarx|' + cxscaticket.cxonelink + ']' + HTML_CRLF)
+
+        elif scanner == 'kics' :
+            if cxkicsticket.platform :
+                body.append( 'Platform: ' + cxkicsticket.platform.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxkicsticket.issuetype :
+                body.append( 'Issue Type: ' + cxkicsticket.issuetype.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxkicsticket.occurences[0].actualvalue :
+                body.append( 'Current Value: ' + cxkicsticket.occurences[0].actualvalue.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            if cxkicsticket.occurences[0].expectedvalue :
+                body.append( 'Expected Value: ' + cxkicsticket.occurences[0].expectedvalue.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
+            items_on  = []
+            items_off = []                
+            for item in cxkicsticket.occurences :
+                if item.state.lower() == 'not_exploitable' :
+                    items_off.append( item.line )
+                else :
+                    items_on.append( item.line )
+            items_on.sort()
+            items_off.sort()
+            if len(items_on) > 0 :
+                aux = []
+                for item in items_on :
+                    aux.append(str(item))
+                body.append( 'Lines: ' + ', '.join(aux) + HTML_CRLF)
+            if len(items_off) > 0 :
+                aux = []
+                for item in items_off :
+                    aux.append(str(item))
+                body.append( 'Lines Marked Not Exploitable: ' + ', '.join(aux) + HTML_CRLF)
+            if cxkicsticket.occurences[0].cxonelink :
+                body.append( '[Checkmarx|' + cxkicsticket.occurences[0].cxonelink + ']' + HTML_CRLF)
+
+        body.append( HTML_CRLF )
+        if self.jiraparams.descriptionpostfix :
+            body.append( self.jiraparams.descriptionpostfix + HTML_CRLF )
+        data = ''.join(body)
+        return data[:JIRA_MAX_DESCRIPTION]
+    
+
+    
+    # Body constructed cxone feed-back apps model
+    def __constructbody_cxone( self, scanner: str, ticket: cxresult ) :
+        
+        body    = []
+            
+        if self.jiraparams.descriptionprefix :
+            body.append( self.jiraparams.descriptionprefix + HTML_CRLF )
+
+        # Resolve project name and branch (special characters handling)
+        project_name    = self.scaninfo.projectname.replace('*', ' ').rstrip(HTML_CRLF).strip()
+        project_branch  = self.scaninfo.branch.replace('*', ' ').rstrip(HTML_CRLF).strip()
+
+        project_url     = self.cxparams.cxurl + '/projects/' + self.scaninfo.projectid + '/overview?branch=' + project_branch
+        scan_url        = self.cxparams.cxurl + '/projects/' + self.scaninfo.projectid + '/scans?id=' + self.scaninfo.scanid + '&branch=' + project_branch
+        
+        if scanner == 'sast' :
+            cxsastticket: cxsastresult = ticket
+            # Construct references
+            if cxsastticket.cwe and cxsastticket.queryid :
+                advice_url = self.cxparams.cxurl + '/results/' + self.scaninfo.projectid + '/' + self.scaninfo.scanid + '/sast/description/' + str(cxsastticket.cwe) + '/' + str(cxsastticket.queryid)
+            else :
+                advice_url = None
+            body.append( '*Checkmarx (SAST):* ' + cxsastticket.queryname + HTML_CRLF )
+            if advice_url :
+                body.append( '*Security Issue:* [Read More|' + advice_url + '] about ' + cxsastticket.queryname + HTML_CRLF )
+            body.append( '*Checkmarx Project:* [' + project_name + '|' + project_url + ']' + HTML_CRLF )
+            body.append( '*Branch:* ' + project_branch + HTML_CRLF )
+            body.append( '*Scan ID:* [' + self.scaninfo.scanid + '|' + scan_url + ']' + HTML_CRLF )
+            # Add description
+            body.append( '----' + HTML_CRLF )
+            if cxsastticket.description :
+                body.append( cxsastticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+            # Process ocurrences
+            occurencecount = 0
+            for occurrence in cxsastticket.occurences :
+                occurencecount += 1
+                body.append( HTML_CRLF + '*Result ' + str(occurencecount) + ':*' + HTML_CRLF )
+                body.append( '*Severity:* ' + occurrence.severity + HTML_CRLF )
+                body.append( '*State:* ' + occurrence.state + HTML_CRLF )
+                body.append( '*Status:* ' + occurrence.status + HTML_CRLF )
+                if len(occurrence.nodes) > 0 :
+                    nodescount = 0
+                    body.append( '*Attack Vector:*' +  HTML_CRLF + HTML_CRLF )
+                    for node in occurrence.nodes :
+                        nodescount += 1
+                        body.append( '*' + str(nodescount) + '. ' + node.name + ':* [' + node.filename + '[' + str(node.line) + ',' + str(node.column) + ']|#L' + str(node.line) + ']' + HTML_CRLF )
+                if occurrence.cxonelink :
+                    body.append( 'Review result in Checkmarx One: [' + cxsastticket.queryname + '|' + occurrence.cxonelink + ']' + HTML_CRLF )
+
+        elif scanner == 'sca' :
+            cxscaticket: cxscaresult = ticket
+            advice_url = 'https://devhub.checkmarx.com/cve-details/' + cxscaticket.id
+            body.append( '*Checkmarx (SAST):* Vulnerable Package' + HTML_CRLF )
+            if advice_url :
+                body.append( '*Security Issue:* [Read More|' + advice_url + '] about ' + cxscaticket.id + HTML_CRLF )
+            body.append( '*Checkmarx Project:* [' + project_name + '|' + project_url + ']' + HTML_CRLF )
+            body.append( '*Branch:* ' + project_branch + HTML_CRLF )
+            body.append( '*Scan ID:* [' + self.scaninfo.scanid + '|' + scan_url + ']' + HTML_CRLF )
+            # Add description
+            if cxscaticket.description :
+                body.append( '----' + HTML_CRLF )
+                body.append( cxscaticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+            body.append( '*Additional Info*' + HTML_CRLF )
+            if cxscaticket.attackvector :
+                body.append( '*Attack vector:* ' + cxscaticket.attackvector + HTML_CRLF )
+            if cxscaticket.attackcomplexity :
+                body.append( '*Attack complexity:* ' + cxscaticket.attackcomplexity + HTML_CRLF )
+            if cxscaticket.confidentiality :
+                body.append( '*Confidentiality impact:* ' + cxscaticket.confidentiality + HTML_CRLF )
+            if cxscaticket.availability :
+                body.append( '*Availability impact:* ' + cxscaticket.availability + HTML_CRLF )
+            if cxscaticket.recommendedversion :
+                body.append( '*Remediation upgrade recommendation:* ' + cxscaticket.recommendedversion + HTML_CRLF )
+            if cxscaticket.cxonelink :
+                body.append( 'Review result in Checkmarx One: [' + cxscaticket.id + '|' + cxscaticket.cxonelink + ']' + HTML_CRLF )
+                
+        elif scanner == 'kics' :
+            cxkicsticket: cxkicsresult = ticket
+            body.append( '*Checkmarx (IaC Security):* ' + cxkicsticket.queryname + HTML_CRLF )
+            body.append( '*Checkmarx Project:* [' + project_name + '|' + project_url + ']' + HTML_CRLF )
+            body.append( '*Branch:* ' + project_branch + HTML_CRLF )
+            body.append( '*Scan ID:* [' + self.scaninfo.scanid + '|' + scan_url + ']' + HTML_CRLF )
+            if cxkicsticket.description :
+                body.append( cxkicsticket.description.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+            # Process ocurrences
+            body.append( HTML_CRLF + '*Locations:*' + HTML_CRLF )
+            occurencecount = 0
+            for occurrence in cxkicsticket.occurences :
+                occurencecount += 1
+                body.append( HTML_CRLF + '*Result ' + str(occurencecount) + ':*' + HTML_CRLF )
+                body.append( '*Severity:* ' + occurrence.severity + HTML_CRLF )
+                body.append( '*State:* ' + occurrence.state + HTML_CRLF )
+                body.append( '*Status:* ' + occurrence.status + HTML_CRLF )
+                body.append( '*File:* ' + '[' + occurrence.filename + '[' + str(occurrence.line) + ',0]|#L' + str(occurrence.line) + ']' + HTML_CRLF )
+                body.append( '*Expected value:* ' + occurrence.expectedvalue.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+                body.append( '*Actual value:* ' + occurrence.actualvalue.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
+                if occurrence.cxonelink :
+                    body.append( 'Review result in Checkmarx One: [' + cxkicsticket.queryname + '|' + occurrence.cxonelink + ']' + HTML_CRLF )
+        
+        body.append( HTML_CRLF )
+        if self.jiraparams.descriptionpostfix :
+            body.append( self.jiraparams.descriptionpostfix + HTML_CRLF )
+        data = ''.join(body)
+        return data[:JIRA_MAX_DESCRIPTION]
+    
+    
+    
+    def __constructbody( self, scanner: str, ticket: cxresult ) :
+        # if self.cxparams.legacymode :
+        if self.cxparams.contentstyle.lower() == 'legacy' :
+            return self.__constructbody_legacy( scanner, ticket )
+        else :
+            return self.__constructbody_cxone( scanner, ticket )
+    
+    
+    
+    def __contructlabels( self, scanner: str, ticket: cxresult ) :
+        labels = []
+    
+        if self.cxparams.legacymode :
+            labels.append( self.JIRA_CX_PRODUCT )
+            if scanner == 'sast' :
+                labels.append( self.JIRA_ISSUE_LABEL_SAST )
+            elif scanner == 'sca' :
+                cxscaticket: cxscaresult = ticket
+                labels.append( self.JIRA_ISSUE_LABEL_SCA )
+                if cxscaticket.isdev :
+                    labels.append( JIRA_SCA_DEV_LABEL )
+                elif cxscaticket.istest :
+                    labels.append( JIRA_SCA_TEST_LABEL )
+                else :
+                    labels.append( JIRA_SCA_PROD_LABEL )
+            elif scanner == 'kics' :
+                labels.append( self.JIRA_ISSUE_LABEL_KICS )
+            # From params, namespace and application and repo provided
+            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+                labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
+            # From params, only application and repo provided
+            elif self.cxparams.application and self.cxparams.repository  :
+                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+            # From params, only application
+            elif self.cxparams.application :
+                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+            
+        else :    
+            labels.append( self.JIRA_CX_PRODUCT )
+            if scanner == 'sast' :
+                labels.append( self.JIRA_ISSUE_LABEL_SAST )
+            elif scanner == 'sca' :
+                labels.append( self.JIRA_ISSUE_LABEL_SCA )
+            elif scanner == 'kics' :
+                labels.append( self.JIRA_ISSUE_LABEL_KICS )
+            labels.append( self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch )
+            if self.cxparams.namespace :
+                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+            else :
+                labels.append( self.jiraparams.ownerlabelprefix + ':n/a' )
+            labels.append( self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname )
+            if self.cxparams.repository :
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+            else :
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.scaninfo.projectname )
+            
+        return labels
+        
+        
+        
+    def __constructfieldsmappings( self, scanner: str, ticket: cxresult, labels: list, existingjiraticket = None ) :
         fields = []
 
         cxprojectname: str  = self.cxparams.cxproject
         if not cxprojectname :
-            cxprojectname = self.scandata['projectName']
-
-        cxloc: int  = None
-        for status in self.scandata['statusDetails'] :
-            if status['name'] == 'sast' :
-                aux = status.get('loc')
-                if aux: 
-                    cxloc = int(aux)
+            cxprojectname = self.scaninfo.projectname
 
         for field in self.jiraparams.fields :
-
             jirago: bool        = True
-
             ftype: str          = field['type'].lower()
             fname: str          = field['name']
             jiraname: str       = field['jiraname']
@@ -280,14 +642,14 @@ class jirafeedback(basefeedback) :
 
                     # Custom fields/tags from scan
                     if fname == 'cx-scan' :
-                        fieldvalue = self.scandata['scan-tags-text']
+                        fieldvalue = self.scaninfo.tagstext
                         if not fieldvalue and jiradefault :
                             fieldvalue = jiradefault
                         else :
                             fieldvalue = None
                     # Custom fields/tags from project
                     else :
-                        ftag    = next( filter( lambda el: el['name'].lower() == fname.lower(), self.scandata['project-tags'] ), None )
+                        ftag    = next( filter( lambda el: el['name'].lower() == fname.lower(), self.scaninfo.projecttags ), None )
                         if ftag :
                             fieldvalue = ftag['value']
                         if not fieldvalue and jiradefault :
@@ -316,100 +678,120 @@ class jirafeedback(basefeedback) :
                             fieldvalue = ftext
                     elif fname == 'branch' :
                         fieldvalue = self.cxparams.branch
-                    elif fname == 'severity' :
-                        fieldvalue = resultelement['severity']
+                    elif fname == 'site' :
+                        fieldvalue = self.cxparams.cxurl
                     elif fname == 'system-date' :
                         date = datetime.now()
                         if jiraoffset and jiraoffset != 0 :
                             date = date + datetime.timedelta(days = jiraoffset)
                         fieldvalue = date.strftime('%Y-%m-%d')
-                    elif fname == 'site' :
-                        fieldvalue = self.cxparams.cxurl
-                    elif fname == 'issue-link' :
-                        fieldvalue = resultelement['cxonelink']
-                    elif fname == 'comment' :
-                        fieldvalue = resultelement['comment']
-                    elif fname == 'similarity-id' :
-                        fieldvalue = resultelement['similarityid']
-                    elif fname == 'not-exploitable' :
-                        ftext = []
-                        for item in resultelement['results'] :
-                            if str(item['state']).lower() == 'not_exploitable' :
-                                ftext.append(str(item['line']))
-                        if len(ftext) > 0 :
-                            fieldvalue = ','.join(ftext)
+                    elif fname == 'severity' :
+                        fieldvalue = ticket.highestseverity
 
-                    # Sast result
+                    # SAST result
                     if scanner == 'sast' :
-                        if fname == 'category' :
-                            fieldvalue = resultelement['queryname']
+                        cxsastticket: cxsastresult = ticket
+                        if fname == 'issue-link' :
+                            fieldvalue = cxsastticket.occurences[0].cxonelink
+                        elif fname == 'comment' :
+                            fieldvalue = cxsastticket.occurences[0].comment
+                        elif fname == 'similarity-id' :
+                            fieldvalue = cxsastticket.occurences[0].similarityid
+                        elif fname == 'not-exploitable' :
+                            ftext = []
+                            for item in cxsastticket.occurences :
+                                if item.state.lower() == 'not_exploitable' :
+                                    ftext.append(str(item.line))
+                            if len(ftext) > 0 :
+                                fieldvalue = ','.join(ftext)
+                        elif fname == 'category' :
+                            fieldvalue = cxsastticket.queryname
                         elif fname == 'cwe' :
-                            fieldvalue = resultelement['cwe']
-                        elif fname == 'cve' :
-                            fieldvalue = None       # Not available for sast
+                            fieldvalue = cxsastticket.cwe
                         elif fname == 'recommendation' :
                             ftext = []
-                            if resultelement['cxonelink'] :
-                                ftext.append( 'Checkmarx Link: ' + resultelement['cxonelink'] )
-                            if self.cxparams.mitre_url and resultelement['cwe'] :
-                                txt = self.cxparams.mitre_url % (str(resultelement['cwe']))
+                            advice_url = None
+                            if cxsastticket.cwe and cxsastticket.queryid :
+                                advice_url = self.cxparams.cxurl + '/results/' + self.scaninfo.projectid + '/' + self.scaninfo.scanid + '/sast/description/' + str(cxsastticket.cwe) + '/' + str(cxsastticket.queryid)
+                            if advice_url :
+                                ftext.append( 'Advice: ' + advice_url )
+                            if self.cxparams.mitre_url and cxsastticket.cwe :
+                                txt = self.cxparams.mitre_url % (str(cxsastticket.cwe))
                                 ftext.append( 'Mitre Details: ' + txt )
                             if self.cxparams.wiki_url :
                                 ftext.append( 'Guidance: ' + self.cxparams.wiki_url )
                             if len(ftext) > 0 :
                                 fieldvalue = HTML_CRLF.join(ftext)
                         elif fname == 'loc' :
-                            fieldvalue = cxloc
+                            fieldvalue = self.scaninfo.loc
                         elif fname == 'filename' :
-                            fieldvalue = resultelement['filename']
+                            fieldvalue = cxsastticket.filename
                         elif fname == 'language' :
-                            fieldvalue = resultelement['language']
-
-                    # Kics result
-                    if scanner == 'kics' :
-                        if fname == 'category' :
-                            fieldvalue = resultelement['queryname']
-                        elif fname == 'platform' :
-                            fieldvalue = resultelement['platform']
-                        elif fname == 'filename' :
-                            fieldvalue = resultelement['filename']
-                        elif fname == 'issue-type' :
-                            fieldvalue = resultelement['issueType']
-                        elif fname == 'recommendation' :
-                            fieldvalue = resultelement['expectedValue']
-
-                    # Sca result
-                    if scanner == 'sca' :
-
-                        if fname == 'package-name' :
-                            fieldvalue = resultelement['packagename']
+                            fieldvalue = cxsastticket.language
+                                
+                        
+                    # SCA result
+                    elif scanner == 'sca' :
+                        cxscaticket: cxscaresult = ticket
+                        if fname == 'issue-link' :
+                            fieldvalue = cxscaticket.cxonelink
+                        elif fname == 'comment' :
+                            fieldvalue = cxscaticket.comment
+                        elif fname == 'similarity-id' :
+                            fieldvalue = cxscaticket.similarityid
+                        elif fname == 'not-exploitable' :
+                            if cxscaticket.state.lower() == 'not_exploitable' :
+                                fieldvalue = 'yes'
+                        elif fname == 'package-name' :
+                            fieldvalue = cxscaticket.packagename
                         elif fname == 'current-version' :
-                            fieldvalue = resultelement['packageversion']
+                            fieldvalue = cxscaticket.packageversion
                         elif fname == 'fixed-version' :
-                            fieldvalue = resultelement['recommendedversion']
+                            fieldvalue = cxscaticket.recommendedversion
                         elif fname == 'newest-version' :
-                            fieldvalue = resultelement['newestversion']
-                        elif fname == 'locations' :
-                            ftext = []
-                            for item in resultelement['packagedata'] :
-                                if item.get('type') and item.get('url') :
-                                    ftext.append( item.get('type') + ': ' + item.get('url') )
-                            if len(ftext) > 0 :
-                                fieldvalue = HTML_CRLF.join(ftext)
+                            fieldvalue = cxscaticket.newestversion
                         elif fname == 'dev-dependency' :
-                            fieldvalue = str(bool(resultelement['isdev'])).upper()
+                            fieldvalue = str(cxscaticket.isdev).upper()
                         elif fname == 'test-dependency' :
-                            fieldvalue = str(bool(resultelement['istest'])).upper()
+                            fieldvalue = str(cxscaticket.istest).upper()
                         elif fname == 'direct-dependency' :
-                            fieldvalue = str(str(resultelement['relation']).upper() == 'DIRECT').upper()
+                            fieldvalue = str(cxscaticket.relation.upper() == 'DIRECT')
                         elif fname == 'risk-score' :
-                            fieldvalue = resultelement['cvss']
+                            fieldvalue = cxscaticket.cvss
                         elif fname == 'outdated' :
-                            fieldvalue = str(not resultelement['packageversion'] == resultelement['newestversion'] ).upper()
+                            fieldvalue = str(not cxscaticket.packageversion == cxscaticket.newestversion).upper()
                         elif fname == 'violates-policy' :
-                            fieldvalue = str(resultelement.get('violatedpoliciescount') and resultelement.get('violatedpoliciescount') > 0).upper()
+                            fieldvalue = str(cxscaticket.violatedpolicies).upper()
                         elif fname == 'cve' :
-                            fieldvalue = resultelement['cve']
+                            fieldvalue = cxscaticket.cve
+                                
+                    # KICS result
+                    elif scanner == 'kics' :
+                        cxkicsticket: cxkicsresult = ticket
+                        if fname == 'issue-link' :
+                            fieldvalue = cxkicsticket.occurences[0].cxonelink
+                        elif fname == 'comment' :
+                            fieldvalue = cxkicsticket.occurences[0].comment
+                        elif fname == 'similarity-id' :
+                            fieldvalue = cxkicsticket.occurences[0].similarityid
+                        elif fname == 'not-exploitable' :
+                            ftext = []
+                            for item in cxkicsticket.occurences :
+                                if item.state.lower() == 'not_exploitable' :
+                                    ftext.append(str(item.line))
+                            if len(ftext) > 0 :
+                                fieldvalue = ','.join(ftext)
+
+                        elif fname == 'category' :
+                            fieldvalue = cxkicsticket.queryname
+                        elif fname == 'platform' :
+                            fieldvalue = cxkicsticket.platform
+                        elif fname == 'filename' :
+                            fieldvalue = cxkicsticket.occurences[0].filename
+                        elif fname == 'issue-type' :
+                            fieldvalue = cxkicsticket.issuetype
+                        elif fname == 'recommendation' :
+                            fieldvalue = cxkicsticket.occurences[0].expectedvalue
 
                 # If the value is missing, check if a default value was specified
                 if (not fieldvalue) and jiradefault :
@@ -424,7 +806,6 @@ class jirafeedback(basefeedback) :
                     # Datetime value conversions
                     if (basetype == 'date') or (basetype == 'datetime') :
                         fieldvalue = self.__getdatetimestring( str(fieldvalue) )
-
                     if jiratype == JIRA_SECURITY_FIELD_TYPE :
                         xvalue = self.__getscuritylevel( jiraname, str(fieldvalue) ) 
                         if xvalue :
@@ -487,238 +868,41 @@ class jirafeedback(basefeedback) :
                         cxlogger.logwarning( 'Field type "' + jiratype + '" is not a valid option' )
 
         return fields
-    
-
-    def __contructbody( self, scanner: str, resultelement ) :
-
-        body    = []
-
-        branch  = self.cxparams.branch if self.cxparams.branch else ''
-
-        resultsurl = self.cxparams.cxurl + '/results/' + self.scandata['projectId'] + '/' + self.scandata['id']
-
-        if self.jiraparams.descriptionprefix :
-            body.append( self.jiraparams.descriptionprefix )
-
-        if scanner == 'sca' :
-            if branch :
-                body.append( JIRA_SCA_ISSUE_BODY_WITH_BRANCH.format( str(resultelement['severity']).upper(), str(resultelement['packagename']), branch ) + HTML_CRLF + HTML_CRLF )
-            else :
-                body.append( JIRA_SCA_ISSUE_BODY.format( str(resultelement['severity']).upper(), str(resultelement['packagename']) ) + HTML_CRLF + HTML_CRLF )
-            if resultelement['description'] :
-                body.append( str(resultelement['description']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
-        elif scanner == 'kics' :
-            if branch :
-                body.append( JIRA_KICS_ISSUE_BODY_WITH_BRANCH.format( str(resultelement['queryname']), str(resultelement['filename']), branch ) + HTML_CRLF + HTML_CRLF )
-            else :
-                body.append( JIRA_KICS_ISSUE_BODY.format( str(resultelement['queryname']), str(resultelement['filename']) ) + HTML_CRLF + HTML_CRLF )
-            if resultelement['description'] :
-                body.append( str(resultelement['description']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
-        else :
-            if branch :
-                body.append( JIRA_SAST_ISSUE_BODY_WITH_BRANCH.format( str(resultelement['queryname']), str(resultelement['filename']), branch ) + HTML_CRLF + HTML_CRLF )
-            else :
-                body.append( JIRA_SAST_ISSUE_BODY.format( str(resultelement['queryname']), str(resultelement['filename']) ) + HTML_CRLF + HTML_CRLF )
-            if resultelement['description'] :
-                body.append( str(resultelement['description']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF + HTML_CRLF )
-
-        ftext = self.cxparams.repo_url
-        if ftext and ('gitlab-ci-token' in ftext) and ('@' in ftext) :
-            repourl = ftext[:8] + ftext[ftext.find('@')+1:]
-        else :
-            repourl = ftext
-
-        cxprojectname: str  = self.cxparams.cxproject
-        if not cxprojectname :
-            cxprojectname = self.scandata['projectName']
-
-        if self.cxparams.namespace :
-            body.append( '*Namespace:* ' + str(self.cxparams.namespace).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
-        if self.cxparams.repository :
-            body.append( '*Repository:* ' + str(self.cxparams.repository).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
-        if self.cxparams.branch :
-            body.append( '*Branch:* ' + str(self.cxparams.branch).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
-        if repourl :
-            body.append( '*Repository Url:* ' + repourl + HTML_CRLF )
-        if self.cxparams.application :
-            body.append( '*Application:* ' + str(self.cxparams.application).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
-        if cxprojectname :
-            body.append( '*Cx-Project:* ' + cxprojectname.replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF )
-        if resultelement['severity'] :
-            body.append( '*Severity:* ' + str(resultelement['severity']) + HTML_CRLF )
-        if resultelement['cwe'] :
-            body.append( '*CWE:* ' + str(resultelement['cwe']) + HTML_CRLF )
-        if resultelement['status'] :
-            body.append( '*Status:* ' + str(resultelement['status']) + HTML_CRLF )
-        if resultelement['state'] :
-            body.append( '*State:* ' + str(resultelement['state']) + HTML_CRLF )
-
-        body.append( HTML_CRLF )
-        body.append( '*Additional Info*' + HTML_CRLF )
-        body.append( '----' + HTML_CRLF )
-
-        if scanner == 'sast' :
-            if self.cxparams.mitre_url and resultelement['cwe'] :
-                body.append( '[Mitre Details|' + self.cxparams.mitre_url % (str(resultelement['cwe'])) + ']' + HTML_CRLF)
-            if self.cxparams.wiki_url :
-                body.append( '[Guidance|' + self.cxparams.wiki_url + ']' + HTML_CRLF)
-            if resultelement['cwe'] and resultelement['queryid'] :
-                body.append( '[Recommended Fix|' + resultsurl + '/sast/description/' + str(resultelement['cwe']) + '/' + str(resultelement['queryid']) + ']' + HTML_CRLF)
-            items_on  = []
-            items_off = []                
-            for item in resultelement['results'] :
-                if str(item['state']).lower() == 'not_exploitable' :
-                    items_off.append( item['line'] )
-                else :
-                    items_on.append( item['line'] )
-            items_on.sort()
-            items_off.sort()
-            if len(items_on) > 0 :
-                aux = []
-                for item in items_on :
-                    aux.append(str(item))
-                body.append( 'Lines: ' + ', '.join(aux) + HTML_CRLF)
-            if len(items_off) > 0 :
-                aux = []
-                for item in items_off :
-                    aux.append(str(item))
-                body.append( 'Lines Marked Not Exploitable: ' + ', '.join(aux) + HTML_CRLF)
-
-        elif scanner == 'kics' :
-            if resultelement['platform'] :
-                body.append( 'Platform: ' + str(resultelement['platform']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
-            if resultelement['issuetype'] :
-                body.append( 'Issue Type: ' + str(resultelement['issuetype']) + HTML_CRLF)
-            if resultelement['value'] :
-                body.append( 'Current Value: ' + str(resultelement['value']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
-            if resultelement['expectedvalue'] :
-                body.append( 'Expected Value: ' + str(resultelement['expectedvalue']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
-            items_on  = []
-            items_off = []                
-            for item in resultelement['results'] :
-                if str(item['state']).lower() == 'not_exploitable' :
-                    items_off.append( item['line'] )
-                else :
-                    items_on.append( item['line'] )
-            items_on.sort()
-            items_off.sort()
-            if len(items_on) > 0 :
-                aux = []
-                for item in items_on :
-                    aux.append(str(item))
-                body.append( 'Lines: ' + ', '.join(aux) + HTML_CRLF)
-            if len(items_off) > 0 :
-                aux = []
-                for item in items_off :
-                    aux.append(str(item))
-                body.append( 'Lines Marked Not Exploitable: ' + ', '.join(aux) + HTML_CRLF)
-
-        elif scanner == 'sca' :
-            if resultelement['id'] :
-                body.append( 'Vulnerability ID: ' + str(resultelement['id']) + HTML_CRLF)
-            if resultelement['packagename'] :
-                body.append( 'Package Name: ' + str(resultelement['packagename']) + HTML_CRLF)
-            if resultelement['packagerepository'] :
-                body.append( 'Package Repo: ' + str(resultelement['packagerepository']) + HTML_CRLF)
-            if resultelement['cvss'] :
-                body.append( 'CVSS Score: ' + str(resultelement['cvss']) + HTML_CRLF)
-            if resultelement['cve'] :
-                body.append( 'CVE: ' + str(resultelement['cve']) + HTML_CRLF)
-            if resultelement['releasedate'] :
-                body.append( 'Publish Date: ' + str(resultelement['releasedate']) + HTML_CRLF)
-            if resultelement['packageversion'] :
-                body.append( 'Current Package Version: ' + str(resultelement['packageversion']) + HTML_CRLF)
-            if resultelement['recommendedversion'] :
-                body.append( 'Remediation Upgrade Recommendation: ' + str(resultelement['recommendedversion']).replace('*', ' ').rstrip(HTML_CRLF).strip() + HTML_CRLF)
-            if resultelement['newestversion'] :
-                body.append( 'Latest Package Version: ' + str(resultelement['newestversion']) + HTML_CRLF)
-            if resultelement['packagerepository'] and resultelement['packagename'] and resultelement['packageversion'] :
-                url = self.cxparams.cxurl + '/sca/#/appsec-knowledge-center/package' + \
-                    parse.quote(resultelement['packagerepository'], safe = '') + '/' + \
-                    parse.quote(resultelement['packagename'], safe = '') + '/' + \
-                    parse.quote(resultelement['packageversion'], safe = '')
-                body.append( '[Guidance|' + url + ']' + HTML_CRLF)
-            if str(resultelement['id']).upper().startswith('CVE-') :
-                url = 'https://nvd.nist.gov/vuln/detail/' + str(resultelement['id']).upper().strip()
-                body.append( '[Reference – NVD link|' + url + ']' + HTML_CRLF)
-
-        if resultelement['cxonelink'] :
-            body.append( '[Checkmarx|' + str(resultelement['cxonelink']) + ']' + HTML_CRLF)
-
-
-        body.append( HTML_CRLF )
-
-        if self.jiraparams.descriptionpostfix :
-            body.append( self.jiraparams.descriptionpostfix )
-
-        data = ''.join(body)
         
-        return data[:JIRA_MAX_DESCRIPTION]
+
     
-
-
-    def __processjiraticket( self, scanner: str, resultelement, existingjiraticket = None ) :
-
-
-        # Construct summary
-        summary = self.__getsummary( scanner, resultelement )
-
-        # Construct description
-        description = self.__contructbody( scanner, resultelement )
-
+    
+    def __processjiraticket( self, scanner: str, ticketsummary: str, ticket: cxresult, jiraticket = None ) :
+        
+        # Construct description (body) according to legacymode
+        description = self.__constructbody( scanner, ticket )
+        
         # Construct priority
         priority = None
         if len(self.jiraparams.priorities) > 0 :
-            severity = str(resultelement['severity']).upper()
+            severity = ticket.highestseverity.upper()
             if severity == 'INFORMATIONAL' :
                 priority = self.jiraparams.priorities.get('INFO')
             else :
-                priority = self.jiraparams.priorities.get(severity)
-
-        # Set assignee
-
-        # Construct control labels
-        labels = []
-        labels.append( JIRA_CX_PRODUCT )
-        if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-            labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
-            labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-            labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
-        # From params, only application and repo provided
-        elif self.cxparams.application and self.cxparams.repository  :
-            labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
-            labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-        # From params, only application
-        elif self.cxparams.application :
-            labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
-        # Scanner type
-        if scanner == 'sast' :
-            labels.append( JIRA_ISSUE_LABEL_SAST )
-        elif scanner == 'sca' :
-            labels.append( JIRA_ISSUE_LABEL_SCA )
-            if resultelement['isdev'] or resultelement['istest'] :
-                labels.append( JIRA_SCA_DEV_LABEL )
-            else :
-                labels.append( JIRA_SCA_PROD_LABEL )
-        elif scanner == 'kics' :
-            labels.append( JIRA_ISSUE_LABEL_KICS )
-
+                priority = self.jiraparams.priorities.get(severity)        
+    
+        # Contruct labels
+        labels = self.__contructlabels( scanner, ticket )
+        
         # Contruct field mappings
-        fields = self.__constructfieldsmappings( scanner, resultelement, labels, existingjiraticket )
-
+        fields = self.__constructfieldsmappings( scanner, ticket, labels, jiraticket )
         # Make sure labels are unique
         labels = list(set(labels))
-
+        
         # Does the issue exist ?
-        if not existingjiraticket :
-            ticket = self.jira.projectcreateissue( self.jiraparams.projectid, self.jiraparams.issuetypeid, summary, description, fields, labels, priority )
+        if not jiraticket :
+            jiraticket = self.jira.projectcreateissue( self.jiraparams.projectid, self.jiraparams.issuetypeid, ticketsummary, description, fields, labels, priority )
             # Add to CREATED
-            cxlogger.verbose( '- JIRA issue ' + ticket['key'] + ' created, type ' + scanner.upper() + ', with key "' + summary + '"' )
-
+            cxlogger.verbose( '- JIRA issue ' + jiraticket.get('key') + ' created, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
         else :
-            ticket = existingjiraticket
-            ticketkey = ticket.get('key')
-            current_status = ticket['fields']['status']['name']
+        
+            ticketkey = jiraticket.get('key')
+            current_status = jiraticket['fields']['status']['name']
             reopened = False
             # If it's not opened, let's reopen it
             if (str(current_status).lower() in self.jiraparams.closedstatus) :
@@ -729,18 +913,18 @@ class jirafeedback(basefeedback) :
                     cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
             # Check if description changed
             newdescription = None
-            if description and (not description == ticket['fields'].get('description')) :
+            if description and (not description == jiraticket['fields'].get('description')) :
                 newdescription = description
             # Check if priority changed
             newpriority = None
             ticketpriority = None
-            if ticket['fields'].get('priority') :
-                ticketpriority = ticket['fields']['priority'].get('name')
+            if jiraticket['fields'].get('priority') :
+                ticketpriority = jiraticket['fields']['priority'].get('name')
             if priority and (not priority == ticketpriority) :
                 newpriority = priority
             # Check if labels changed
             newlabels   = []
-            existinglabels = ticket['fields'].get('labels')
+            existinglabels = jiraticket['fields'].get('labels')
             if not existinglabels :
                 existinglabels = []
             for label in labels :
@@ -757,13 +941,12 @@ class jirafeedback(basefeedback) :
                 self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
 
             if reopened :
-                cxlogger.verbose( '- JIRA issue ' + ticket['key'] + ' re-opened, type ' + scanner.upper() + ', with key "' + summary + '"' )
+                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
             else :
-                cxlogger.verbose( '- JIRA issue ' + ticket['key'] + ' still exists, type ' + scanner.upper() + ', with key "' + summary + '"' )
-
-        return ticket
-
-
+                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' still exists, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
+        
+        return jiraticket
+        
 
 
     def __processscannerresults( self, scanner: str ) :
@@ -775,35 +958,45 @@ class jirafeedback(basefeedback) :
             cxlogger.verbose( '- No existing ' + scanner + ' tickets found' )
         else :
             cxlogger.verbose( '- Found ' + str(len(jiratickets)) + ' ' + scanner + ' tickets' )
-
-        # Check the results
-        for ticket in self.resultdata[scanner] :
+            
+        # Identify the results list
+        resultslist = None        
+        if scanner == 'sast' :
+            resultslist = self.results.sast
+        elif scanner == 'sca' :
+            resultslist = self.results.sca
+        elif scanner == 'kics' :
+            resultslist = self.results.kics
+        if not resultslist :
+            return    
+        
+        # Check closed tickets
+        for jiraticket in jiratickets :
+            jiraticketsummary   = jiraticket['fields'].get('summary')
+            jiraticketkey       = jiraticket.get('key')
+            jirastatus          = jiraticket['fields']['status']['name']
+            # Does the result still exist ?
+            cxresult = None
+            for ticket in resultslist :
+                ticketsummary = self.__getsummary( scanner, ticket )    
+                if ticketsummary == jiraticketsummary :
+                    cxresult = ticket
+                    break
+            # Shall close it ?
+            if not cxresult and (str(jirastatus).lower() in self.jiraparams.openstatus) :
+                if self.jiraparams.closetransition :
+                    self.jira.tickettransition( jiraticketkey, self.jiraparams.closetransition )
+                    cxlogger.verbose( '- JIRA issue ' + str(jiraticketkey) + ' closed, type ' + scanner.upper() + ', with key "' + jiraticketsummary + '"' )    
+                else :
+                    cxlogger.logwarning( 'Close transtion missing. Cannot close "' + str(jiraticketkey) + '"' )
+        
+        # Check new or updated tickets
+        for ticket in resultslist :
             ticketsummary = self.__getsummary( scanner, ticket )
-            ticket[self.cxparams.ticketkeyname] = ticketsummary
             # Does the ticket exist ?
             jiraticket = next( filter( lambda el: el['fields']['summary'] == ticketsummary, jiratickets ), None )
             # Will create, update, and transition (open/close/reopen)
-            self.__processjiraticket( scanner, ticket, jiraticket )
-
-        # Check closed
-        for ticket in jiratickets :
-            ticketsummary   = ticket['fields'].get('summary')
-            ticketkey       = ticket.get('key')
-            current_status  = ticket['fields']['status']['name']
-            # Does the result still exist ?
-            cxresult = next( filter( lambda el: el[self.cxparams.ticketkeyname] == ticketsummary, self.resultdata[scanner] ), None )
-            # Shall close it ?
-            if not cxresult and (str(current_status).lower() in self.jiraparams.openstatus) :
-                if self.jiraparams.closetransition :
-                    self.jira.tickettransition( ticketkey, self.jiraparams.closetransition )
-                    cxlogger.verbose( '- JIRA issue ' + ticket['key'] + ' closed, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )    
-                else :
-                    cxlogger.logwarning( 'Close transtion missing. Cannot close "' + str(ticketkey) + '"' )
-
-
-        # Clean in up
-        jiratickets = None
-        return
+            self.__processjiraticket( scanner, ticketsummary, ticket, jiraticket )
 
 
 
@@ -812,13 +1005,15 @@ class jirafeedback(basefeedback) :
 
         # Establish connection to Jira and pre-process Jira parameters
         self.__initialize()
+        # Setup references and constants (legacymode or cxone mode)
+        self.__intreferences()
 
         # Go one scanner at the time
-        if self.resultdata['sast'] :
+        if len(self.results.sast) > 0 :
             self.__processscannerresults( 'sast' )
-        if self.resultdata['sca'] :
+        if len(self.results.sca) > 0 :
             self.__processscannerresults( 'sca' )
-        if self.resultdata['kics'] :
+        if len(self.results.kics) > 0 :
             self.__processscannerresults( 'kics' )
 
         return

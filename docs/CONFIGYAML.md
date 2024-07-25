@@ -11,6 +11,7 @@ repo-url:
 branch: 
 cx-project: 
 cx-flow: 
+  legacymode:
   bug-tracker: JIRA
   filter-severity: 
     - Critical

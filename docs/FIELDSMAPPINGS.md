@@ -33,7 +33,6 @@ All the fields below can be used. Those that are not relevant for a specific sca
 |result|current-version||X||The package current version|
 |result|fixed-version||X||The package version containing the fix (if existing)|
 |result|newest-version||X||The package newest known version|
-|result|locations||X||The locations form where the package can be obtained|
 |result|dev-dependency||X||Is the package a dev package (True/False)|
 |result|test-dependency||X||Is the package a test package (True/False)|
 |result|direct-dependency||X||Is the package a direct dependency (True/False)|

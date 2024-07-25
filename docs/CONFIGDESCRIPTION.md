@@ -27,6 +27,8 @@ Below the list of all configuration options available, in their different sectio
 |--repo-url|Repository URL|
 |--branch|Repository branch name|
 |--cx-project|CXONE project name|
+|--cx-flow.legacymode|When "true", the default, manages feedback tickets with CxFlow compatibility. Otherwise uses CxOne feed-back apps model|
+|--cx-flow.contentstyle|How ticket contents are filled. Options are "legacy" or "cxone". By default, it follows the "legacymode" flag|
 |--cx-flow.bug-tracker|Currentry, only JIRA is supported|
 |--cx-flow.mitre-url|Url for mitre documentation relative to vulnerabilities|
 |--cx-flow.wiki-url|Url for wiki documentation relative to vulnerabilities|
@@ -108,8 +110,7 @@ Below the list of all configuration options available, in their different sectio
 |--jira.kics-issue-summary-format|Format mask for KICS issues, for special needs. Default is empty|
 |--jira.kics-issue-summary-branch-format|Format mask for KICS issues for branches, for special needs. Default is empty|
 |--jira.update-comment|Update comments also when updating tickets. When "false", the default, comments are only written when new tickets are created|
-|--jira.priorities.Critical|Checkmarx severity to bind with JIRA Critical priority. Default is "High"|
-|--jira.priorities.Critical|JIRA priority to bind with Checkamrx critical severity. Default is "High"|
+|--jira.priorities.Critical|JIRA priority to bind with Checkamrx critical severity. Default is "Highest"|
 |--jira.priorities.High|JIRA priority to bind with Checkamrx high severity. Default is "High"|
 |--jira.priorities.Medium|JIRA priority to bind with Checkamrx medium severity. Default is "Medium"|
 |--jira.priorities.Medium|JIRA priority to bind with Checkamrx low severity. Default is "Low"|
