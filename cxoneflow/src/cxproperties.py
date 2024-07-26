@@ -12,6 +12,9 @@ class cxproperties(object) :
 
         self.scanid                     = config.value( 'scanid' )
         
+        # Maximum number of results to handle
+        self.resultcountmax              = 1000000
+        
         # If scanid was supplyed as a file name, expect scan summary json and try parse it
         # Check if the scan id is to be taken from the AST-CLI json output
         # Comodity for CI/CD pipelines
