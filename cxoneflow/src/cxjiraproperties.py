@@ -229,6 +229,9 @@ class jiraproperties(object) :
                 #     if jira_type != 'any' :
                 #         if not ( (jira_type and jira_type.lower() == jiratype.lower()) or (jira_syst and jira_syst.lower() == jiratype.lower()) ) :
                 #             raise Exception( 'Jira issue type "' + jiratype + '" is not valid for field "' + jiraname + '"' )
+                # Check labels name
+                if not jiraname and jiratype == 'label' :
+                    jiraname = 'labels'
                 # Add to list
                 map = { 'type': cxtype.lower(),
                         'name': cxname.lower(),

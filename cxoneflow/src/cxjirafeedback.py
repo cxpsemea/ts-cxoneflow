@@ -1,7 +1,9 @@
 
 import re
+import json
 from datetime import datetime
 from urllib import parse
+from requests import HTTPError
 from cxloghandler import cxlogger
 from config import config
 from .basefeedback import basefeedback
@@ -187,7 +189,17 @@ class jirafeedback(basefeedback) :
                 jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
     
         # Get it all. It uses paged gets of self.jiraparams.maxjqlresults per pages
-        return self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
+        try :
+            issues = self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
+        except HTTPError as e:
+            raise Exception( self.__processjiraexception( False, True, e ) )
+        except Exception as e:
+            if str(e) :
+                raise e
+            else :
+                raise Exception( 'Error retrieving jira tickets' )
+            
+        return issues
 
 
 
@@ -620,17 +632,17 @@ class jirafeedback(basefeedback) :
                 cxlogger.logwarning( 'Field type not supplied for custom field: ' + fname + '. Using "result" by default.' )
                 ftype = 'result'
 
+            updateoperation = None            
             if not existingjiraticket :
                 updateoperation = 'new'
-            elif existingjiraticket and not (jiraname.lower() == 'labels') and jirago :
+            elif existingjiraticket and (jiraname.lower() != 'labels') and jirago :
                 if 'set' in operations :
                     updateoperation = 'set'
-                # elif 'edit' in operations :
-                #     updateoperation = 'edit'
-                else :
-                    updateoperation = None            
                 if not updateoperation :
                     cxlogger.logdebug( 'Skip update to field "' + jiralabel + '"' )
+                    
+            if (not updateoperation) and (jiraname.lower() == 'labels') and jirago :
+                updateoperation = 'label'
 
             if not updateoperation :
                 jirago = False
@@ -828,9 +840,12 @@ class jirafeedback(basefeedback) :
                                 xvalue.append( re.sub( '[^a-zA-Z0-9:\\-_]+', '_', str(value) ) )
                         if len(xvalue) > 0 :
                             if jiraname.lower() == self.jiraparams.labeltracker :
-                                labels.append( fname + ':' + ''.join(xvalue) )
+                                if (jiralabel == '') or (jiralabel == self.jiraparams.labeltracker) :
+                                    labels.append( ''.join(xvalue))
+                                else :
+                                    labels.append( jiralabel + ':' + ''.join(xvalue) )
                             else :
-                                fields.append( { jiraname : xvalue }  )
+                                fields.append( { jiraname : xvalue } )
                     elif jiratype == 'single-select' :
                         fields.append( { jiraname : { JIRA_VALUE_FIELD_TYPE : fieldvalue } }  )
                     elif jiratype == 'radio' :
@@ -870,6 +885,22 @@ class jirafeedback(basefeedback) :
         return fields
         
 
+
+    def __processjiraexception( self, creating: bool, retrieving: bool, he: HTTPError ) :
+        jdata  = json.loads(he.response.text)
+        if 'errors' in jdata :
+            txt = []
+            for error in jdata['errors'].keys() :
+                txt.append( jdata['errors'][error] + ' (' + error + ')' )
+            return ', '.join(txt)
+        else :
+            if retrieving :
+                return 'Error retrieving jira tickets'
+            elif creating :
+                return 'Error creating jira ticket'
+            else :
+                return 'Error updating jira ticket'
+            
     
     
     def __processjiraticket( self, scanner: str, ticketsummary: str, ticket: cxresult, jiraticket = None ) :
@@ -896,7 +927,16 @@ class jirafeedback(basefeedback) :
         
         # Does the issue exist ?
         if not jiraticket :
-            jiraticket = self.jira.projectcreateissue( self.jiraparams.projectid, self.jiraparams.issuetypeid, ticketsummary, description, fields, labels, priority )
+            try :            
+                jiraticket = self.jira.projectcreateissue( self.jiraparams.projectid, self.jiraparams.issuetypeid, ticketsummary, description, fields, labels, priority )
+            except HTTPError as e:
+                raise Exception( self.__processjiraexception( True, False, e ) )
+            except Exception as e:
+                if str(e) :
+                    raise e
+                else :
+                    raise Exception( 'Error creating jira ticket' )
+            
             # Add to CREATED
             cxlogger.verbose( '- JIRA issue ' + jiraticket.get('key') + ' created, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
         else :
@@ -907,7 +947,16 @@ class jirafeedback(basefeedback) :
             # If it's not opened, let's reopen it
             if (str(current_status).lower() in self.jiraparams.closedstatus) :
                 if self.jiraparams.opentransition :
-                    self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
+                    try :
+                        retdata = self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
+                    except HTTPError as e:
+                        raise Exception( self.__processjiraexception( False, False, e ) )
+                    except Exception as e:
+                        if str(e) :
+                            raise e
+                        else :
+                            raise Exception( 'Error transitioning jira ticket' )
+                    
                     reopened = True
                 else :
                     cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
@@ -938,7 +987,15 @@ class jirafeedback(basefeedback) :
                 fields = None
 
             if newdescription or newpriority or newlabels or fields :
-                self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
+                try :
+                    self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
+                except HTTPError as e:
+                    raise Exception( self.__processjiraexception( False, False, e ) )
+                except Exception as e:
+                    if str(e) :
+                        raise e
+                    else :
+                        raise Exception( 'Error updating jira ticket' )
 
             if reopened :
                 cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )

@@ -16,6 +16,7 @@ from .dto.cxresults import *
 class cxprocessor(baserunner) :
 
     def __init__(self, config: config, conn: cxoneconn, cxparams: cxproperties ) :
+        self.__allcounter           = 0
         # Sca packages list (internal use)
         self.__sca_packages         = []
         # Scan info
@@ -89,7 +90,14 @@ class cxprocessor(baserunner) :
         scaresulturlmask    = self.cxparams.cxurl + '/results/' + self.__scan.projectid + '/' + self.__scan.id + '/sca?internalPath={resultid}'
         kicsresulturlmask   = self.cxparams.cxurl + '/results/' + self.__scan.id + '/' + self.__scan.projectid + '/kics?result-id={resultid}'
         
+        if self.__allcounter > self.cxparams.resultcountmax :
+            return
+        
         for result in scanresults :
+            
+            self.__allcounter += 1
+            if self.__allcounter > self.cxparams.resultcountmax :
+                return
             
             if not thescanner :
                 scanner = result['type']
@@ -251,6 +259,8 @@ class cxprocessor(baserunner) :
 
 
     def processscan(self) :
+
+        self.__allcounter = 0
         
         self.__getscandata( self.cxparams.scanid )
 
