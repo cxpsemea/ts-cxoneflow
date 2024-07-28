@@ -135,6 +135,8 @@ class jiraproperties(object) :
         fpos: int = 0
         fkey: str = 'jira.fields.' + str(fpos) + '.type'
         found = config.haskey(fkey)
+        if found and not self.__fields :
+            self.__fields = []
         while found :
             ftype       = config.value(fkey)
             fname       = config.value('jira.fields.' + str(fpos) + '.name')
