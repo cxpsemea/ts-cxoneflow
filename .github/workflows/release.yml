@@ -184,6 +184,35 @@ jobs:
           replacesArtifacts: true
 
 
+  # Docker builds          
+  build_docker:
+    needs: process_version
+    runs-on: ubuntu-latest
+    name: Docker Builds
+    env:
+      PS_VERSION: ${{needs.process_version.outputs.VERSION_TAG}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Build docker image
+        run: |
+          curl -s -L https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-alpine64.tar.gz > /tmp/cxflow/cxoneflow-alpine64.tar.gz
+          tar xzvf /tmp/cxflow/cxoneflow-alpine64.tar.gz -C /tmp/cxflow
+          rm /tmp/cxflow/cxoneflow-alpine64.tar.gz
+          docker build -f .build/dockerfile -t cxoneflow:latest -o - > cxoneflow.docker.tar
+      - name: Deploy artifacts
+        # See: https://github.com/marketplace/actions/create-release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: cxoneflow.docker.tar
+          name: "Checkmarx PS CxOneFlow ${{env.PS_VERSION}}" 
+          tag: "${{env.PS_VERSION}}"
+          allowUpdates: true
+          replacesArtifacts: true
+
+
   # Macos builds job
   # To activate when signing is available
   # build_macos:

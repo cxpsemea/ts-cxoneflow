@@ -1,0 +1,13 @@
+FROM alpine
+
+RUN mkdir /app
+RUN mkdir /app/bin
+RUN cd /app/bin
+
+COPY cxoneflow /app/bin/cxoneflow
+COPY application.yaml /app/bin/application.yaml
+COPY LICENSE /app/bin/LICENSE
+
+RUN chmod -R 777 /app/bin
+
+ENTRYPOINT ["/app/bin/cxoneflow"]
