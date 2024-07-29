@@ -198,12 +198,16 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
-      - name: Build docker image
+      - name: Get alpine binaries
         run: |
           curl -s -L https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-alpine64.tar.gz > cxoneflow-alpine64.tar.gz
           tar xzvf cxoneflow-alpine64.tar.gz -C .
           rm cxoneflow-alpine64.tar.gz
           cp .build/dockerfile Dockerfile
+      - name: Build docker image
+        run: |
+          docker version
+          ls -1 -l
           docker build . -t cxoneflow:latest -o - > cxoneflow-docker.tar
       - name: Deploy artifacts
         # See: https://github.com/marketplace/actions/create-release
