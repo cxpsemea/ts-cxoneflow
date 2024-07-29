@@ -1,0 +1,39 @@
+cxoneflow --verbose `
+ --scanid "YOUR-SCAN-ID" `
+ --app "YOUR-APP-NAME" `
+ --cx-flow.legacymode true `
+ --cx-flow.bug-tracker JIRA `
+ --cx-flow.filter-severity "Critical,High,Medium,Low" `
+ --cx-flow.mitre-url https://cwe.mitre.org/data/definitions/%s.html `
+ --cx-flow.enabled-vulnerability-scanners "sast,sca,kics" `
+ --cxone.url https://eu.ast.checkmarx.net `
+ --cxone.acl https://eu.iam.checkmarx.net `
+ --cxone.tenant "YOUR-CXONE-TENANT-NAME" `
+ --cxone.clientid "YOUR-CXONE-OAUTH-CLIENT-ID" `
+ --cxone.apikey "YOUR-CXONE-OAUTH-CLIENT-SECRET" `
+ --cxone.granttype client_credentials `
+ --checkmarx.incremental false `
+ --sca.filter-severity "Critical,High,Medium,Low" `
+ --kics.filter-severity "Critical,High,Medium,Low" `
+ --jira.url https://your.jira.cloud-or-server.uri `
+ --jira.username "YOUR-JIRA-USERN-NAME" `
+ --jira.token "YOUR-JIRA-PASSWORD-OR-PAT"" `
+ --jira.project "YOUR-JIRA-PROJECT-NAME" `
+ --jira.issue-type Bug `
+ --jira.priorities.Critical Highest `
+ --jira.priorities.High High `
+ --jira.priorities.Medium Medium `
+ --jira.priorities.Low Low `
+ --jira.priorities.Informational Lowest `
+ --jira.open-transition In Progress `
+ --jira.close-transition Done `
+ --jira.open-status "To Do,Backlog,Selected for Development,In Progress" `
+ --jira.closed-status Done `
+ --jira.fields.0.type result `
+ --jira.fields.0.name loc `
+ --jira.fields.0.jira-field-name LOC `
+ --jira.fields.0.jira-field-type label `
+ --jira.fields.1.type result `
+ --jira.fields.1.name severity `
+ --jira.fields.1.jira-field-name CxCustom `
+ --jira.fields.1.jira-field-type multi-select 
