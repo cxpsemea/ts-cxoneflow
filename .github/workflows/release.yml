@@ -186,7 +186,9 @@ jobs:
 
   # Docker builds          
   build_docker:
-    needs: process_version
+    needs: 
+      - process_version
+      - build_alpine
     runs-on: ubuntu-latest
     name: Docker Builds
     env:
