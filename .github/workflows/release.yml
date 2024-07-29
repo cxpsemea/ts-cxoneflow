@@ -200,9 +200,9 @@ jobs:
           fetch-depth: 1
       - name: Build docker image
         run: |
-          curl -s -L https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-alpine64.tar.gz > /tmp/cxflow/cxoneflow-alpine64.tar.gz
-          tar xzvf /tmp/cxflow/cxoneflow-alpine64.tar.gz -C /tmp/cxflow
-          rm /tmp/cxflow/cxoneflow-alpine64.tar.gz
+          curl -s -L https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-alpine64.tar.gz > cxoneflow-alpine64.tar.gz
+          tar xzvf cxoneflow-alpine64.tar.gz -C .
+          rm cxoneflow-alpine64.tar.gz
           docker build -f .build/dockerfile -t cxoneflow:latest -o - > cxoneflow.docker.tar
       - name: Deploy artifacts
         # See: https://github.com/marketplace/actions/create-release
