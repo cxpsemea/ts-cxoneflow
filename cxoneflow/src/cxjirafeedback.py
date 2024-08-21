@@ -763,17 +763,32 @@ class jirafeedback(basefeedback) :
                         elif fname == 'newest-version' :
                             fieldvalue = cxscaticket.newestversion
                         elif fname == 'dev-dependency' :
-                            fieldvalue = str(cxscaticket.isdev).upper()
+                            if cxscaticket.isdev :
+                                fieldvalue = 'TRUE'
+                            else :
+                                fieldvalue = 'FALSE'
                         elif fname == 'test-dependency' :
-                            fieldvalue = str(cxscaticket.istest).upper()
+                            if cxscaticket.istest :
+                                fieldvalue = 'TRUE'
+                            else :
+                                fieldvalue = 'FALSE'
                         elif fname == 'direct-dependency' :
-                            fieldvalue = str(cxscaticket.relation.upper() == 'DIRECT')
+                            if cxscaticket.relation.upper() == 'DIRECT' :
+                                fieldvalue = 'TRUE'
+                            else :
+                                fieldvalue = 'FALSE'
                         elif fname == 'risk-score' :
                             fieldvalue = cxscaticket.cvss
                         elif fname == 'outdated' :
-                            fieldvalue = str(not cxscaticket.packageversion == cxscaticket.newestversion).upper()
+                            if cxscaticket.packageversion == cxscaticket.newestversion :
+                                fieldvalue = 'FALSE'
+                            else :
+                                fieldvalue = 'TRUE'
                         elif fname == 'violates-policy' :
-                            fieldvalue = str(cxscaticket.violatedpolicies).upper()
+                            if cxscaticket.violatedpolicies :
+                                fieldvalue = 'TRUE'
+                            else :
+                                fieldvalue = 'FALSE'
                         elif fname == 'cve' :
                             fieldvalue = cxscaticket.cve
                                 

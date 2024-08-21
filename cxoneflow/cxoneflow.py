@@ -90,8 +90,22 @@ class cxoneflow(baserunner) :
             cxxoneconn = None
             try :
                 cxlogger.verbose( 'Connecting to CXONE "' + self.config.value('cxone.url') + '"' )
-                cxxoneconn = cxoneconn( self.config.value('cxone.url'), self.config.value('cxone.tenant'), self.config.value('cxone.apikey'), 
-                                self.config.value('cxone.acl'), self.config.value('cxone.clientid'), self.config.value('cxone.granttype'), 
+                # Check required parameters
+                cxone_url       = self.config.value('cxone.url')
+                cxone_acl       = self.config.value('cxone.acl')
+                cxone_tenant    = self.config.value('cxone.tenant')
+                cxone_apikey    = self.config.value('cxone.apikey')
+                cxone_clientid  = self.config.value('cxone.clientid')
+                cxone_granttype = self.config.value('cxone.granttype')
+                if not cxone_url :
+                    raise Exception( 'Missing CxOne url' )
+                if not cxone_tenant :
+                    raise Exception( 'Missing CxOne tenant name' )
+                if not cxone_apikey:
+                    raise Exception( 'Missing CxOne api key/client secret' )
+                if not cxone_clientid and (cxone_granttype == 'client_credentials') :
+                    raise Exception( 'Missing CxOne client id' )
+                cxxoneconn = cxoneconn( cxone_url, cxone_tenant, cxone_apikey, cxone_acl, cxone_clientid, cxone_granttype, 
                                 self.config.value('cxone.proxy_url'), self.config.value('cxone.proxy_username'), self.config.value('cxone.proxy_password') )
                 cxxoneconn.logon()
                 ver = cxxoneconn.versionstring
