@@ -88,6 +88,9 @@ class config(object) :
         # Do we have a --logs-folder command line argument ?
         if not self.__logsfolder :
             self.__logsfolder = self.__command_arg('logs-folder' )
+            if self.__logsfolder :
+                self.__logsfolder = os.path.abspath(self.__logsfolder)
+                
 
         # Search for config.yaml, config.yml, config.json
         if (not self.__filename) and (path) :
