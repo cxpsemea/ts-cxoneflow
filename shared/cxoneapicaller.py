@@ -65,10 +65,7 @@ class cxoneapi(object):
         self.__host         = fqdn.strip().lower().rstrip('/')
         # Resolve keycloak endpoint from fqdn, if it is not supplyed
         if not aclfqdn :
-            if self.__host.startswith( 'https://ast' ) :
-                self.__keycloak = 'https://iam.checkmarx.net'
-            else :
-                self.__keycloak = self.__host[0: self.__host.find('.')] + '.iam.checkmarx.net'
+            self.__keycloak = self.__host.replace('ast', 'iam')
         else :
             self.__keycloak = aclfqdn.strip().lower().rstrip('/')
         self.__apikey       = apikey
