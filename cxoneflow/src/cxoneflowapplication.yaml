@@ -4,7 +4,7 @@ cx-flow:
   - Critical
   - High
   - Medium
-  - Low
+  # - Low
   # - Information
   filter-category:
   # - Code_Injection
@@ -15,7 +15,7 @@ cx-flow:
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  # - To Verify
+  - To Verify
   mitre-url: https://cwe.mitre.org/data/definitions/%s.html
   enabled-vulnerability-scanners:
   - sca
@@ -61,7 +61,7 @@ sca:
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  # - To Verify
+  - To Verify
   filter-score: 9.0
   # filter-dependency-type: Direct
   # filter-ignore-dev-test: false
@@ -87,7 +87,7 @@ kics:
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  # - To Verify
+  - To Verify
   # filter-category:
   # - APT-GET Not Avoiding Additional Packages
   # - Missing User Instruction
