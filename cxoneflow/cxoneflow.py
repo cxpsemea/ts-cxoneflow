@@ -124,8 +124,10 @@ class cxoneflow(baserunner) :
             results     = None
 
             # Process scan results
+            cxlogger.verbose( '============================================================' )
             runner = cxprocessor( self.config, cxxoneconn, cxparams )
             has_results = runner.processscan()
+            cxlogger.verbose( '============================================================' )
 
             if has_results :
                 feeder      = None
@@ -138,7 +140,6 @@ class cxoneflow(baserunner) :
                     if cxparams.bug_tracker == 'jira' :
                         feeder = jirafeedback( self.config, cxparams, scandata, results )
                     if feeder :
-                        cxlogger.verbose( '============================================================' )
                         feeder.processfeedback()
                     else :
                         cxlogger.verbose( 'SKIPPED: no supported bug-tracker found' )
