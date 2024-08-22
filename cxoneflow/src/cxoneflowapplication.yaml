@@ -10,12 +10,12 @@ cx-flow:
   # - Code_Injection
   # - Client_DOM_Stored_XSS
   # filter-cwe:
-  # filter-status:
+  filter-status:
   - Urgent
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  - To Verify
+  # - To Verify
   mitre-url: https://cwe.mitre.org/data/definitions/%s.html
   enabled-vulnerability-scanners:
   - sca
@@ -61,7 +61,7 @@ sca:
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  - To Verify
+  # - To Verify
   filter-score: 9.0
   # filter-dependency-type: Direct
   # filter-ignore-dev-test: false
@@ -87,7 +87,7 @@ kics:
   - Confirmed
   # - Not Exploitable
   - Proposed Not Exploitable
-  - To Verify
+  # - To Verify
   # filter-category:
   # - APT-GET Not Avoiding Additional Packages
   # - Missing User Instruction
@@ -108,6 +108,7 @@ jira:
   project: 
   issue-type: Bug
   priorities:
+    Critical: Highest
     High: High
     Medium: Medium
     Low: Low

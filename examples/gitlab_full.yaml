@@ -1,0 +1,252 @@
+#
+# These variables can be overridden in your .gitlab-ci.yml file or as environment variables or as secrets.
+#
+# Find more documentation at: https://checkmarx.com/resource/documents/en/34965-68722-checkmarx-one-gitlab-integration.html
+#
+
+# SECRETS TO DEFINE (RECOMMENDED)
+# -------------------------------
+# - CX_BASE_URI       Checkmarx One URI
+# - CX_BASE_IAM_URI   Checkmarx Access Control (IAM) URI
+# - CX_TENANT         Checkmarx One tenant name
+# - CX_CLIENT_ID      Checkmarx One Oauth Client Id
+# - CX_CLIENT_SECRET  Checkmarx One Oauth Client Secret
+# - CX_JIRA_URL       Jira URI
+# - CX_JIRA_USERNAME  Jira username (leave empty if the token below is a PAT)
+# - CX_JIRA_TOKEN     Jira password, token, or PAT
+# - GITLAB_PAT        GitLab Access Token (for decorations)
+
+variables:
+    CX_PROJECT_NAME: "advlab_cli"
+    CX_BRANCH_NAME: "${CI_COMMIT_REF_NAME}"
+    CX_ADDITIONAL_PARAMS: ""
+    CX_FILE_FILTERS: ""
+    CHECKMARX_DOCKER_IMAGE: "ast-cli"
+    SECURITY_DASHBOARD: "false"
+    SECURITY_DASHBOARD_ON_MR: "false"
+    # CXONEFLOW Specifics
+    CXTOOL_CXONE_URL: "$CX_BASE_URI"
+    CXTOOL_CXONE_ACL: "$CX_BASE_IAM_URI"
+    CXTOOL_CXONE_CLIENTID: "$CX_CLIENT_ID"
+    CXTOOL_CXONE_APIKEY: "$CX_CLIENT_SECRET"
+    CXTOOL_CXONE_GRANTTYPE: "client_credentials"
+    CXTOOL_CXONE_TENANT: "$CX_TENANT"
+    CXTOOL_JIRA_URL: "$CX_JIRA_URL"
+    CXTOOL_JIRA_USERNAME: "$CX_JIRA_USERNAME"
+    CXTOOL_JIRA_TOKEN: "$CX_JIRA_TOKEN"
+    # The JIRA Project
+    CX_JIRA_PROJECT: "CXONEFLOW"     
+
+#image: ubuntu
+image: python:3.9
+
+checkmarx-scan:
+  stage: test
+  rules:
+    - if: '$SECURITY_DASHBOARD != "true" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'  
+  variables:
+    LOG_FILE: ./cxone_logs/output.log
+  before_script:
+    - mkdir ./cxone_logs
+    - mkdir /app
+    - mkdir /app/bin
+    - wget -nv https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz -P /app/bin
+    - wget -nv https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-ubuntu64.tar.gz -P /app/bin
+    - tar xzvf /app/bin/ast-cli_linux_x64.tar.gz -C /app/bin
+    - tar xzvf /app/bin/cxoneflow-ubuntu64.tar.gz -C /app/bin
+    - rm /app/bin/ast-cli_linux_x64.tar.gz
+    - rm /app/bin/cxoneflow-ubuntu64.tar.gz
+  script:
+    - eval "args=(${CX_ADDITIONAL_PARAMS})"
+    - >-
+      /app/bin/cx
+      scan create
+      --project-name ${CX_PROJECT_NAME}
+      --file-source '.'
+      --scan-info-format 'json'
+      --branch ${CX_BRANCH_NAME}
+      --agent 'Gitlab' 
+      --report-format gl-sast
+      --file-filter "${CX_FILE_FILTERS}"
+      "${args[@]}" | tee -i $LOG_FILE
+  after_script:
+    - scanId=(`grep -E '"(ID)":"((\\"|[^"])*)"' $LOG_FILE | cut -d',' -f1 | cut -d':' -f2 | tr -d '"'`)
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Processing JIRA tickets for scan:" $scanId
+        /app/bin/cxoneflow -v \
+          --jira.project $CX_JIRA_PROJECT \
+          --app $CX_JIRA_PROJECT \
+          --scanid $scanId \
+          --cx-flow.enabled-vulnerability-scanners "sast,sca" \
+          --cx-flow.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --sca.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --logs-folder ./cxone_logs
+        else
+        echo "JIRA tickets not processed, scan ID not available"
+      fi
+
+checkmarx-scan-security-dashboard:
+  stage: test
+  rules:
+    - if: '$SECURITY_DASHBOARD == "true" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'  
+  variables:
+    LOG_FILE: ./cxone_logs/output.log
+  before_script:
+    - mkdir ./cxone_logs
+    - mkdir /app
+    - mkdir /app/bin
+    - wget -nv https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz -P /app/bin
+    - wget -nv https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-ubuntu64.tar.gz -P /app/bin
+    - tar xzvf /app/bin/ast-cli_linux_x64.tar.gz -C /app/bin
+    - tar xzvf /app/bin/cxoneflow-ubuntu64.tar.gz -C /app/bin
+    - rm /app/bin/ast-cli_linux_x64.tar.gz
+    - rm /app/bin/cxoneflow-ubuntu64.tar.gz
+  script:
+    - eval "args=(${CX_ADDITIONAL_PARAMS})"
+    - >-
+      /app/bin/cx
+      scan create
+      --project-name ${CX_PROJECT_NAME}
+      --file-source '.'
+      --scan-info-format 'json'
+      --branch ${CX_BRANCH_NAME}
+      --agent 'Gitlab' 
+      --report-format gl-sast
+      --file-filter "${CX_FILE_FILTERS}"
+      "${args[@]}" | tee -i $LOG_FILE
+  after_script:
+    - scanId=(`grep -E '"(ID)":"((\\"|[^"])*)"' $LOG_FILE | cut -d',' -f1 | cut -d':' -f2 | tr -d '"'`)
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Processing JIRA tickets for scan:" $scanId
+        /app/bin/cxoneflow -v \
+          --jira.project $CX_JIRA_PROJECT \        
+          --app $CX_JIRA_PROJECT \
+          --scanid $scanId \
+          --cx-flow.enabled-vulnerability-scanners "sast,sca" \
+          --cx-flow.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --sca.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --logs-folder ./cxone_logs
+      else
+        echo "JIRA tickets not processed, scan ID not available"
+      fi
+
+mr-checkmarx-scan:
+  stage: test
+  rules:
+    - if: '$SECURITY_DASHBOARD_ON_MR != "true" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    LOG_FILE: ./cxone_logs/output.log
+  before_script:
+    - mkdir ./cxone_logs
+    - mkdir /app
+    - mkdir /app/bin
+    - wget -nv https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz -P /app/bin
+    - wget -nv https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-ubuntu64.tar.gz -P /app/bin
+    - tar xzvf /app/bin/ast-cli_linux_x64.tar.gz -C /app/bin
+    - tar xzvf /app/bin/cxoneflow-ubuntu64.tar.gz -C /app/bin
+    - rm /app/bin/ast-cli_linux_x64.tar.gz
+    - rm /app/bin/cxoneflow-ubuntu64.tar.gz
+  script:
+    - eval "args=(${CX_ADDITIONAL_PARAMS})"
+    - >-
+      /app/bin/cx
+      scan create
+      --project-name ${CX_PROJECT_NAME}
+      --file-source '.'
+      --scan-info-format 'json'
+      --branch ${CX_BRANCH_NAME}
+      --agent 'Gitlab' 
+      --report-format gl-sast
+      --file-filter "${CX_FILE_FILTERS}"
+      "${args[@]}" | tee -i $LOG_FILE
+  after_script:
+    - scanId=(`grep -E '"(ID)":"((\\"|[^"])*)"' $LOG_FILE | cut -d',' -f1 | cut -d':' -f2 | tr -d '"'`)
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Creating MR decoration for scan:" $scanId
+        /app/bin/cx utils pr gitlab \
+          --gitlab-project-id $CI_PROJECT_ID \
+          --mr-iid $CI_MERGE_REQUEST_IID \
+          --namespace $CI_PROJECT_NAMESPACE \
+          --repo-name $CI_PROJECT_NAME \
+          --scan-id $scanId \
+          --token $GITLAB_PAT 
+      else
+        echo "MR decoration not created, scan ID not available"
+      fi
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Processing JIRA tickets for scan:" $scanId
+        /app/bin/cxoneflow -v \
+          --jira.project $CX_JIRA_PROJECT \        
+          --app $CX_JIRA_PROJECT \
+          --scanid $scanId \
+          --cx-flow.enabled-vulnerability-scanners "sast,sca" \
+          --cx-flow.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --sca.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --logs-folder ./cxone_logs
+      else
+        echo "JIRA tickets not processed, scan ID not available"
+      fi
+
+mr-checkmarx-scan-security-dashboard:
+  stage: test
+  rules:
+    - if: '$SECURITY_DASHBOARD_ON_MR == "true" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    LOG_FILE: ./cxone_logs/output.log
+  before_script:
+    - mkdir ./cxone_logs
+    - mkdir /app
+    - mkdir /app/bin
+    - wget -nv https://github.com/Checkmarx/ast-cli/releases/latest/download/ast-cli_linux_x64.tar.gz -P /app/bin
+    - wget -nv https://github.com/cxpsemea/ts-cxoneflow/releases/latest/download/cxoneflow-ubuntu64.tar.gz -P /app/bin
+    - tar xzvf /app/bin/ast-cli_linux_x64.tar.gz -C /app/bin
+    - tar xzvf /app/bin/cxoneflow-ubuntu64.tar.gz -C /app/bin
+    - rm /app/bin/ast-cli_linux_x64.tar.gz
+    - rm /app/bin/cxoneflow-ubuntu64.tar.gz
+  script:
+    - eval "args=(${CX_ADDITIONAL_PARAMS})"
+    - >-
+      /app/bin/cx
+      scan create
+      --project-name ${CX_PROJECT_NAME}
+      --file-source '.'
+      --scan-info-format 'json'
+      --branch ${CX_BRANCH_NAME}
+      --agent 'Gitlab' 
+      --report-format gl-sast
+      --file-filter "${CX_FILE_FILTERS}"
+      "${args[@]}" | tee -i $LOG_FILE
+  after_script:
+    - scanId=(`grep -E '"(ID)":"((\\"|[^"])*)"' $LOG_FILE | cut -d',' -f1 | cut -d':' -f2 | tr -d '"'`)
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Creating MR decoration for scan:" $scanId
+        /app/bin/cx utils pr gitlab \
+          --gitlab-project-id $CI_PROJECT_ID \
+          --mr-iid $CI_MERGE_REQUEST_IID \
+          --namespace $CI_PROJECT_NAMESPACE \
+          --repo-name $CI_PROJECT_NAME \
+          --scan-id $scanId \
+          --token $GITLAB_PAT 
+      else
+        echo "MR decoration not created, scan ID not available"
+      fi
+    - >-
+      if [ -n "$scanId" ]; then
+        echo "Processing JIRA tickets for scan:" $scanId
+        /app/bin/cxoneflow -v \
+          --jira.project $CX_JIRA_PROJECT \        
+          --app $CX_JIRA_PROJECT \
+          --scanid $scanId \
+          --cx-flow.enabled-vulnerability-scanners "sast,sca" \
+          --cx-flow.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --sca.filter-status "Urgent,Confirmed,Proposed Not Exploitable,To Verify" \
+          --logs-folder ./cxone_logs
+      else
+        echo "JIRA tickets not processed, scan ID not available"
+      fi
+    
