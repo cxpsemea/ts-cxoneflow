@@ -59,8 +59,7 @@ checkmarx-scan:
   script:
     - eval "args=(${CX_ADDITIONAL_PARAMS})"
     - >-
-      /app/bin/cx
-      scan create
+      /app/bin/cx scan create
       --project-name ${CX_PROJECT_NAME}
       --file-source '.'
       --scan-info-format 'json'
@@ -105,8 +104,7 @@ checkmarx-scan-security-dashboard:
   script:
     - eval "args=(${CX_ADDITIONAL_PARAMS})"
     - >-
-      /app/bin/cx
-      scan create
+      /app/bin/cx scan create
       --project-name ${CX_PROJECT_NAME}
       --file-source '.'
       --scan-info-format 'json'
@@ -151,8 +149,7 @@ mr-checkmarx-scan:
   script:
     - eval "args=(${CX_ADDITIONAL_PARAMS})"
     - >-
-      /app/bin/cx
-      scan create
+      /app/bin/cx scan create
       --project-name ${CX_PROJECT_NAME}
       --file-source '.'
       --scan-info-format 'json'
@@ -210,8 +207,7 @@ mr-checkmarx-scan-security-dashboard:
   script:
     - eval "args=(${CX_ADDITIONAL_PARAMS})"
     - >-
-      /app/bin/cx
-      scan create
+      /app/bin/cx scan create
       --project-name ${CX_PROJECT_NAME}
       --file-source '.'
       --scan-info-format 'json'
