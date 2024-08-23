@@ -74,7 +74,7 @@ jobs:
               export CXTOOL_JIRA_USERNAME=${{secrets.CX_JIRA_USERNAME}}
               export CXTOOL_JIRA_TOKEN=${{secrets.CX_JIRA_TOKEN}}
               export CXTOOL_JIRA_PROJECT=${{env.CX_JIRA_PROJECT}}
-              /tmp/cxoneflow/cxoneflow --app "${{env.CX_JIRA_PROJECT}}" --scanid "${{steps.cxone_scan.outputs.cxScanID}}"
+              /tmp/cxoneflow/cxoneflow -v --app "${{env.CX_JIRA_PROJECT}}" --scanid "${{steps.cxone_scan.outputs.cxScanID}}"
             else
               echo "JIRA tickets not processed."
             fi        
