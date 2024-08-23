@@ -397,6 +397,12 @@ class config(object) :
     @property
     def logsfolder(self):
         return self.__logsfolder
+    
+    
+    # Return logs verbose mode (defaults false)    
+    @property
+    def logsverbose(self):
+        return self.value('verbose') or self.haskey('verbose')
 
 
     # Returns the value from a specific key
