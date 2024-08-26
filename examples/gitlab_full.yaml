@@ -119,7 +119,7 @@ checkmarx-scan-security-dashboard:
       if [ -n "$scanId" ]; then
         echo "Processing JIRA tickets for scan:" $scanId
         /app/bin/cxoneflow -v \
-          --jira.project $CX_JIRA_PROJECT \        
+          --jira.project $CX_JIRA_PROJECT \
           --app $CX_JIRA_PROJECT \
           --scanid $scanId \
           --cx-flow.enabled-vulnerability-scanners "sast,sca" \
@@ -177,7 +177,7 @@ mr-checkmarx-scan:
       if [ -n "$scanId" ]; then
         echo "Processing JIRA tickets for scan:" $scanId
         /app/bin/cxoneflow -v \
-          --jira.project $CX_JIRA_PROJECT \        
+          --jira.project $CX_JIRA_PROJECT \
           --app $CX_JIRA_PROJECT \
           --scanid $scanId \
           --cx-flow.enabled-vulnerability-scanners "sast,sca" \
@@ -235,7 +235,7 @@ mr-checkmarx-scan-security-dashboard:
       if [ -n "$scanId" ]; then
         echo "Processing JIRA tickets for scan:" $scanId
         /app/bin/cxoneflow -v \
-          --jira.project $CX_JIRA_PROJECT \        
+          --jira.project $CX_JIRA_PROJECT \
           --app $CX_JIRA_PROJECT \
           --scanid $scanId \
           --cx-flow.enabled-vulnerability-scanners "sast,sca" \
