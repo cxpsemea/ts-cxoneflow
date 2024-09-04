@@ -5,8 +5,8 @@ Each field mapping accepts the following attributes:
 
 |Attribute|Mandatory|Description|
 |---|---|---|
-|type|X|The CxONE field type to get data from (see [CxOne fields for mappings](docs/FIELDSMAPPINGS.md) for details)|
-|name|X|The CxONE field name to get data from (see [CxOne fields for mappings ](docs/FIELDSMAPPINGS.md) for details)|
+|type|X|The CxONE field type to get data from (see [CxOne fields for mappings](FIELDSMAPPINGS.md) for details)|
+|name|X|The CxONE field name to get data from (see [CxOne fields for mappings ](FIELDSMAPPINGS.md) for details)|
 |jira-field-type|X|The JIRA field type. The value must comply to the JIRA type defs. See below the supported types|
 |jira-field-name|X|The target issue field name (field labels can also be used to identify the field)|
 |jira-default-value||A default value to use in case CxONE does not deliver a value|
