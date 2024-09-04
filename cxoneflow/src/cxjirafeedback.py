@@ -98,6 +98,54 @@ class jirafeedback(basefeedback) :
             self.JIRA_ISSUE_LABEL_SAST: str              = 'SAST'
             self.JIRA_ISSUE_LABEL_SCA: str               = 'SCA'
             self.JIRA_ISSUE_LABEL_KICS: str              = 'IaC-Security'
+            
+            
+            
+    def __processtagfields(self, projecttags: bool ) :
+        
+        tags = []
+        if projecttags :
+            source = 'project'
+            tags   = self.scaninfo.projecttags
+        else :
+            source = 'scan'
+            tags   = self.scaninfo.tags
+
+        for tag in tags :
+            tagkey      = str(tag['name'])
+            tagvalue    = str(tag['value'])
+            if tagkey and tagvalue and tagkey != tagvalue and tagkey.startswith('feedback-') and tagkey != 'feedback-' :
+                jira_name = str(tagkey.split('-', 1))
+                # Have we this field name in jira ticket fields (JIRA Cloud contains a 'key' field while in JIRA server it comes as 'fieldId')
+                jira_field = next( filter( lambda el: str(el['name']).upper() == jira_name.upper() or str(el[self.jiraparams.issuefieldskey]).upper() == jira_name.upper(), self.jiraparams.issuefields ), None )
+                if not jira_field :
+                    cxlogger.logwarning( 'Could not find a JIRA field "' + jira_field + '" for ' + source + ' tag "' + tagkey + '", Ignoring' )
+                else :
+                    jiraname        = jira_field.get(self.jiraparams.issuefieldskey)
+                    jiralabel       = jira_field.get('name')
+                    jiraoperations  = jira_field.get('operations')
+                    jirabasetype    = jira_field['schema'].get('type')
+                    jirasystype     = jira_field['schema'].get('system')
+                    jiraitemtype    = jira_field['schema'].get('items')
+                    # Is this field already populated ?
+                    jira_exists = next( filter( lambda el: el['jiraname'] == jira_name, self.jiraparams.fields ), None )
+                    # Add it to the list
+                    if not jira_exists :
+                        # Add to list
+                        map = { 'type': 'static',
+                                'name': jiraname,
+                                'jiraname': jiraname,
+                                'jiratype': jirabasetype,
+                                'label': jiralabel,
+                                'default': tagvalue,
+                                'skipupdate': False, 
+                                'offset': 0,
+                                'basetype': jirabasetype,
+                                'systype': jirasystype,
+                                'itemstype': jiraitemtype,
+                                'operations': jiraoperations }
+                    self.jiraparams.fields.append(map)
+
         
 
     def __getscuritylevel( self, jirafieldname: str, value: str ) :
@@ -1079,6 +1127,12 @@ class jirafeedback(basefeedback) :
         self.__initialize()
         # Setup references and constants (legacymode or cxone mode)
         self.__intreferences()
+        # Process tags (project and scan) to fields, when content style is not legacy mode
+        if self.cxparams.contentstyle == 'cxone' :
+            # Process project tags first
+            self.__processtagfields( projecttags = True ) 
+            # Process scan tags next
+            self.__processtagfields( projecttags = False ) 
 
         # Go one scanner at the time
         if len(self.results.sast) > 0 :
