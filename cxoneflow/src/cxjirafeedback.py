@@ -115,7 +115,7 @@ class jirafeedback(basefeedback) :
             tagkey      = str(tag['name'])
             tagvalue    = str(tag['value'])
             if tagkey and tagvalue and tagkey != tagvalue and tagkey.startswith('feedback-') and tagkey != 'feedback-' :
-                jira_name = str(tagkey.split('-', 1))
+                jira_name = str(tagkey.split('-', 1)[1])
                 # Have we this field name in jira ticket fields (JIRA Cloud contains a 'key' field while in JIRA server it comes as 'fieldId')
                 jira_field = next( filter( lambda el: str(el['name']).upper() == jira_name.upper() or str(el[self.jiraparams.issuefieldskey]).upper() == jira_name.upper(), self.jiraparams.issuefields ), None )
                 if not jira_field :
@@ -131,11 +131,17 @@ class jirafeedback(basefeedback) :
                     jira_exists = next( filter( lambda el: el['jiraname'] == jira_name, self.jiraparams.fields ), None )
                     # Add it to the list
                     if not jira_exists :
+                        jira_type: str = jirabasetype
+                        if jira_type.lower() == self.jiraparams.labeltracker :
+                            jira_type = 'label'
+                        elif jira_type.lower() == 'string' :
+                            jira_type = 'text'
+                        
                         # Add to list
                         map = { 'type': 'static',
                                 'name': jiraname,
                                 'jiraname': jiraname,
-                                'jiratype': jirabasetype,
+                                'jiratype': jira_type,
                                 'label': jiralabel,
                                 'default': tagvalue,
                                 'skipupdate': False, 

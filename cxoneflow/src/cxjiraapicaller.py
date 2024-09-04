@@ -1,17 +1,13 @@
 """ 
 ========================================================================
 
-SIMPLE CLASS TO JIRA INTERACTIONS
+CLASS TO JIRA REST INTERACTIONS
 Requires:   atlassian-python-api
             pip install atlassian-python-api
 References: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
             https://community.atlassian.com/t5/Jira-articles/Atlassian-Python-API-s/ba-p/2091355
             https://community.atlassian.com/t5/App-Central/Basics-of-API-in-Jira-Confluence-and-Bitbucket/ba-p/1599968
             https://developer.atlassian.com/server/jira/platform/jira-rest-api-examples
-
-joao.costa@checkmarx.com
-PS-EMEA
-20-12-2023
 
 ========================================================================
 """

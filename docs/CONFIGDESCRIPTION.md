@@ -35,7 +35,7 @@ Below the list of all configuration options available, in their different sectio
 |--cx-flow.break-build|Flag to break pipelines on thresholds/policies violations (default is True)|
 |--cx-flow.disable-break-build|Have break build disabled in all cases|
 |--cx-flow.branches|To filter specific branches usable to feedback (default is any branch)|
-|--cx-flow.enabled-vulnerability-scanners|sast, sca, kics (default [ sast,sca])|
+|--cx-flow.enabled-vulnerability-scanners|sast, sca, kics (default is sast,sca)|
 
 ### CXONE connectivity configurations
 

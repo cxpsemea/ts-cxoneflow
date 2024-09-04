@@ -1,21 +1,6 @@
-""" 
-========================================================================
-
-SIMPLE CLASS CXONE A INDEPENDENT CXONE
-INCLUDES SUB-OBJECTS:
-    .ast    for CXONE REST API calls
-    .ac     for KEUCLOAK ACCESS-CONTROL REST API calls
-
-joao.costa@checkmarx.com
-PS-EMEA
-22-12-2022
-
-========================================================================
-"""
 
 import jwt
 from cxoneapicaller import cxoneapi
-
 
 
 class cxoneconn(object):

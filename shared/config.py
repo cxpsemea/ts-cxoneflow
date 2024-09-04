@@ -14,10 +14,6 @@ DEFAULT CONFIG FILE WILL BE SEARCHED IN THE APPLICATION MAIN FOLDER:
 2. config.yml
 3. config.json
 
-joao.costa@checkmarx.com
-PS-EMEA
-10-11-2022
-
 ========================================================================
 """
 
