@@ -1,6 +1,5 @@
 
 cxconfigdefaults = {
-    "verbose": None,
     "logs-folder": None,
     "scanid": None,
     "app": None,
