@@ -63,28 +63,32 @@ class cxscan(object) :
         scantags    = scandata['tags']
         tagkeys     = list(scantags.keys())
         if tagkeys and len(tagkeys) > 0 :
-            tagname = tagkeys[0]
-            tagvalue = scantags[tagkeys[0]]
-            if not tagvalue :
-                tagvalue = tagname
-            self.tags.append( { 'name': tagname, 'value': tagvalue } )
-            if tagstext :
-                tagstext = tagstext + ', '
-            tagstext = tagstext + tagname + ': ' + tagvalue
+            for tagkey in tagkeys :
+                tagname     = tagkey
+                tagvalue    = scantags[tagkey]
+                # tagname = tagkeys[0]
+                # tagvalue = scantags[tagkeys[0]]
+                if not tagvalue :
+                    tagvalue = tagname
+                self.tags.append( { 'name': tagname, 'value': tagvalue } )
+                if tagstext :
+                    tagstext = tagstext + ', '
+                tagstext = tagstext + tagname + ': ' + tagvalue
         self.tagstext = tagstext
         # Process project tags
         tagstext = ''
         projecttags = projectdata['tags']
         tagkeys = list(projecttags.keys())
         if tagkeys and len(tagkeys) > 0 :
-            tagname = tagkeys[0]
-            tagvalue = projecttags[tagkeys[0]]
-            if not tagvalue :
-                tagvalue = tagname
-            self.projecttags.append( { 'name': tagname, 'value': tagvalue } )
-            if tagstext :
-                tagstext = tagstext + ', '
-            tagstext = tagstext + tagname + ': ' + tagvalue
+            for tagkey in tagkeys :
+                tagname     = tagkey
+                tagvalue    = projecttags[tagkey]
+                if not tagvalue :
+                    tagvalue = tagname
+                self.projecttags.append( { 'name': tagname, 'value': tagvalue } )
+                if tagstext :
+                    tagstext = tagstext + ', '
+                tagstext = tagstext + tagname + ': ' + tagvalue
         self.projecttagstext = tagstext
         
         

@@ -44,7 +44,7 @@ cx-flow:
     - critical: 2
     - high: 10
     # - medium: 50
-    # - low: 100    
+    # - low: 100
 cxone:
   url: https://eu.ast.checkmarx.net
   acl: https://eu.iam.checkmarx.net

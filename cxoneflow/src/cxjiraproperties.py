@@ -218,7 +218,7 @@ class jiraproperties(object) :
                 # In JIRA Cloud contains a 'key' field while in JIRA server it comes as 'fieldId'
                 jira_field = next( filter( lambda el: el['name'] == jiralabel or el[self.issuefieldskey] == jiralabel, self.issuefields ), None )
                 # if not jira_field and jiratype not in ['label','security','priority'] :
-                if not jira_field and jiratype not in ['label','security'] :
+                if not jira_field and jiratype not in ['label','security','component'] :
                     raise Exception( 'Jira issue field "' + str(jiralabel) + '" was not found for issue type "' + str(self.issuetype) + '"' )
                 # Check jira base type
                 if jira_field :

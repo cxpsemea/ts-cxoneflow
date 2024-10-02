@@ -956,19 +956,31 @@ class jirafeedback(basefeedback) :
 
 
     def __processjiraexception( self, creating: bool, retrieving: bool, he: HTTPError ) :
-        jdata  = json.loads(he.response.text)
+        jdata = json.loads(he.response.text)
+        smsg  = ''
         if 'errors' in jdata :
             txt = []
             for error in jdata['errors'].keys() :
                 txt.append( jdata['errors'][error] + ' (' + error + ')' )
-            return ', '.join(txt)
-        else :
+            if len(txt) == 0 and 'errorMessages' in jdata :
+                for error in jdata['errorMessages'] :
+                    txt.append( error )
+            smsg = ', '.join(txt)
+        if not smsg :
             if retrieving :
-                return 'Error retrieving jira tickets'
+                smsg = 'Error retrieving jira tickets'
             elif creating :
-                return 'Error creating jira ticket'
+                smsg = 'Error creating jira ticket'
             else :
-                return 'Error updating jira ticket'
+                smsg = 'Error updating jira ticket'
+        else : 
+            if retrieving :
+                smsg = 'Error retrieving jira tickets, ' + smsg
+            elif creating :
+                smsg = 'Error creating jira ticket, ' + smsg
+            else :
+                smsg = 'Error updating jira ticket, ' + smsg
+        return smsg
             
     
     
