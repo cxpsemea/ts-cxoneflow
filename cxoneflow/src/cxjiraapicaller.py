@@ -172,12 +172,12 @@ class cxjiraapi(object) :
         print( 'Transition id:', transition_id)
         
         # Encoded
-        print( 'Encoded: ' + str(transition).encode() )
+        print( str(transition).encode() )
 
         
         # Check it
         for t in stransitions :
-            print( 'Enc:', str(t['name']).encode() )
+            print( str(t['name']).encode() )
             if t['name'] == transition :
                 print( 'Found transition: ', t['id'] )
         
