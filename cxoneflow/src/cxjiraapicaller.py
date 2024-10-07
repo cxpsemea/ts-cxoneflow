@@ -162,8 +162,24 @@ class cxjiraapi(object) :
         print( stransitions )
         # Check issue transitions
         print('Desired transition:', transition)
-        transition_id = self.jira.get_transition_id_to_status_name(issue_key = ticketid, status_name = transition)
+        
+        oadvanced_mode = self.jira.advanced_mode
+        try :
+            self.jira.advanced_mode = True
+            transition_id = self.jira.get_transition_id_to_status_name(issue_key = ticketid, status_name = transition)
+        finally :
+            self.jira.advanced_mode = oadvanced_mode
         print( 'Transition id:', transition_id)
+        
+        # Encoded
+        print( 'Encoded: ' + str(transition).encode() )
+
+        
+        # Check it
+        for t in stransitions :
+            print( 'Enc:', str(t['name']).encode() )
+            if t['name'] == transition :
+                print( 'Found transition: ', t['id'] )
         
         return self.jira.issue_transition( issue_key = ticketid, status = transition )
 
