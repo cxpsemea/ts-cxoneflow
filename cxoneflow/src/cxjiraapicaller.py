@@ -156,32 +156,15 @@ class cxjiraapi(object) :
 
 
     def tickettransition( self, ticketid, transition ) :
-        
         # Check issue transitions
         stransitions = self.jira.get_issue_transitions(issue_key = ticketid)
-        print( stransitions )
-        # Check issue transitions
-        print('Desired transition:', transition)
-        
-        oadvanced_mode = self.jira.advanced_mode
-        try :
-            self.jira.advanced_mode = True
-            transition_id = self.jira.get_transition_id_to_status_name(issue_key = ticketid, status_name = transition)
-        finally :
-            self.jira.advanced_mode = oadvanced_mode
-        print( 'Transition id:', transition_id)
-        
-        # Encoded
-        print( str(transition).encode() )
-
-        
-        # Check it
+        # Find desired transition id
+        transition_id: int = None
         for t in stransitions :
-            print( str(t['name']).encode() )
             if t['name'] == transition :
-                print( 'Found transition: ', t['id'] )
-        
-        return self.jira.issue_transition( issue_key = ticketid, status = transition )
+                transition_id = t['id']
+        # Move to transition
+        return self.jira.set_issue_status_by_transition_id(ticketid, transition_id)
 
 
     def projectcreateissue(self, projectkey, issuetypekey, summary: str, description: str, fieldsandvalues: list = None, labels: list = None, priority: str = None ) :
