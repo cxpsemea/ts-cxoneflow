@@ -160,6 +160,10 @@ class cxjiraapi(object) :
         # Check issue transitions
         stransitions = self.jira.get_issue_transitions(issue_key = ticketid)
         print( stransitions )
+        # Check issue transitions
+        print('Desired transition:', transition)
+        transition_id = self.jira.get_transition_id_to_status_name(issue_key = ticketid, status_name = transition)
+        print( 'Transition id:', transition_id)
         
         return self.jira.issue_transition( issue_key = ticketid, status = transition )
 
