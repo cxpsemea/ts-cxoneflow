@@ -1079,9 +1079,9 @@ class jirafeedback(basefeedback) :
                         raise Exception( 'Error updating jira ticket' )
 
             if reopened :
-                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
+                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', prev status "' + current_status + '", with key "' + ticketsummary + '"' )
             else :
-                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' still exists, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
+                cxlogger.verbose( '- JIRA issue ' + ticketkey + ' still exists, type ' + scanner.upper() + ', status "' + current_status + '", with key "' + ticketsummary + '"' )
         
         return jiraticket
         
@@ -1124,7 +1124,7 @@ class jirafeedback(basefeedback) :
             if not cxresult and (str(jirastatus).lower() in self.jiraparams.openstatus) :
                 if self.jiraparams.closetransition :
                     self.jira.tickettransition( jiraticketkey, self.jiraparams.closetransition )
-                    cxlogger.verbose( '- JIRA issue ' + str(jiraticketkey) + ' closed, type ' + scanner.upper() + ', with key "' + jiraticketsummary + '"' )    
+                    cxlogger.verbose( '- JIRA issue ' + str(jiraticketkey) + ' closed, type ' + scanner.upper() + ', prev status "' + str(jirastatus) + '", with key "' + jiraticketsummary + '"' )
                 else :
                     cxlogger.logwarning( 'Close transtion missing. Cannot close "' + str(jiraticketkey) + '"' )
         

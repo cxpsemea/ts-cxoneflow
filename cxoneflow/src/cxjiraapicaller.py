@@ -164,7 +164,10 @@ class cxjiraapi(object) :
             if t['name'] == transition :
                 transition_id = t['id']
         # Move to transition
-        return self.jira.set_issue_status_by_transition_id(ticketid, transition_id)
+        if transition_id == None :
+            raise Exception( 'Transition "' + transition + '" not found or not enabled for the issue.')
+        else :
+            return self.jira.set_issue_status_by_transition_id(ticketid, transition_id)
 
 
     def projectcreateissue(self, projectkey, issuetypekey, summary: str, description: str, fieldsandvalues: list = None, labels: list = None, priority: str = None ) :
