@@ -203,7 +203,7 @@ class cxjiraapi(object) :
         if description :
             payload['description']  = [ { 'set':  description } ]
         if priority :
-            payload['priority']     = { 'name': priority }
+            payload['priority']     = [ { 'set': { 'name': priority } } ]
         # Add labels field
         if labels :
             xlabels = []

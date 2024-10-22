@@ -1066,7 +1066,7 @@ class jirafeedback(basefeedback) :
             # Check fields
             if len(fields) == 0 :
                 fields = None
-
+                
             if newdescription or newpriority or newlabels or fields :
                 try :
                     self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
