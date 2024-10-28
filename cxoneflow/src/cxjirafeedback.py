@@ -1106,8 +1106,11 @@ class jirafeedback(basefeedback) :
         elif scanner == 'kics' :
             resultslist = self.results.kics
         if not resultslist :
-            return    
+            cxlogger.verbose( '- No ' + scanner + ' results found to process' )
+            return
         
+        cxlogger.verbose( '- Found ' + str(len(resultslist)) + ' ' + scanner + ' results to process' )
+       
         # Check closed tickets
         for jiraticket in jiratickets :
             jiraticketsummary   = jiraticket['fields'].get('summary')
