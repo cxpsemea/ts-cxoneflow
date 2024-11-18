@@ -155,6 +155,18 @@ class cxjiraapi(object) :
         # http://localhost:8080/rest/api/2/issue/createmeta?projectKeys=JRA&issuetypeNames=Bug&
 
 
+    def projectassignableusers( self, projectkey, pagesize: int = 100 ) :
+        users   = []
+        top     = 0
+        limit   = pagesize
+        data = self.jira.get_all_assignable_users_for_project( projectkey, start = top, limit = pagesize )
+        while data and len(data) > 0 :
+            users.extend(data)
+            top += limit
+            data = self.jira.get_all_assignable_users_for_project( projectkey, start = top, limit = pagesize )
+        return users        
+
+
     def tickettransition( self, ticketid, transition ) :
         # Check issue transitions
         stransitions = self.jira.get_issue_transitions(issue_key = ticketid)

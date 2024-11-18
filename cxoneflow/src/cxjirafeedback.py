@@ -46,6 +46,8 @@ class jirafeedback(basefeedback) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
+        # A cache for assignable users so we do not have to keep calling
+        self.__jirausers        = {}
         super().__init__(config, cxparams, scaninfo, results)
 
 
@@ -210,6 +212,22 @@ class jirafeedback(basefeedback) :
 
         return ''
 
+
+    def __validate_jira_user( self, projectid: str, useremailorname: str ) :
+        user = None
+        if not self.__jirausers or projectid not in self.__jirausers.keys() :
+            self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
+        users = self.__jirausers.get(projectid)
+        if users :
+            user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
+            if not user :
+                user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
+            if not user :
+                user = next( filter( lambda el: el['accountId'].lower() == useremailorname.lower(), users ), None )
+        if user :
+            return user['accountId']
+        else :
+            return None
 
 
     # Get existing JIRA tickets for scanner
@@ -532,7 +550,7 @@ class jirafeedback(basefeedback) :
         elif scanner == 'sca' :
             cxscaticket: cxscaresult = ticket
             advice_url = 'https://devhub.checkmarx.com/cve-details/' + cxscaticket.id
-            body.append( '*Checkmarx (SAST):* Vulnerable Package' + HTML_CRLF )
+            body.append( '*Checkmarx (SCA):* Vulnerable Package' + HTML_CRLF )
             if advice_url :
                 body.append( '*Security Issue:* [Read More|' + advice_url + '] about ' + cxscaticket.id + HTML_CRLF )
             body.append( '*Checkmarx Project:* [' + project_name + '|' + project_url + ']' + HTML_CRLF )
@@ -883,14 +901,20 @@ class jirafeedback(basefeedback) :
                     # If jira type is not defined, use default = text
                     if not jiratype :
                         jiratype = 'text'
-
                     # Datetime value conversions
                     if (basetype == 'date') or (basetype == 'datetime') :
                         fieldvalue = self.__getdatetimestring( str(fieldvalue) )
+                    # Go for the fields
                     if jiratype == JIRA_SECURITY_FIELD_TYPE :
                         xvalue = self.__getscuritylevel( jiraname, str(fieldvalue) ) 
                         if xvalue :
                             fields.append( { jiraname : xvalue } )
+                    elif (basetype == 'user') :
+                        xvalue = self.__validate_jira_user( self.jiraparams.projectid, str(fieldvalue) )
+                        if not xvalue :
+                            cxlogger.logwarning( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
+                        else :
+                            fields.append( { jiraname : { 'id': xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
                     elif jiratype == 'component' :
