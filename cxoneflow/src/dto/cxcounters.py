@@ -38,8 +38,12 @@ class cxresultscounter(object) :
             if score > self.cvsscore :
                 self.cvsscore           = score
                 self.cvsscorepackage    = scanresult['data']['packageIdentifier']
-        
     
+    @property
+    def total(self) :
+        return self.critical + self.high + self.medium + self.low + self.info
+
+
 # Results counters for scanners    
 class cxresultscounters(object) :
 

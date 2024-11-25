@@ -42,13 +42,13 @@ JIRA_MAX_DESCRIPTION: int               = 32760
 class jirafeedback(basefeedback) :
 
 
-    def __init__(self, config: config, cxparams: cxproperties, scaninfo: cxscan, results: cxresults ) :
+    def __init__(self, config: config, cxparams: cxproperties, scaninfo: cxscan, results: cxresults, counters: cxresultscounters, countersall: cxresultscounters ) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
         # A cache for assignable users so we do not have to keep calling
         self.__jirausers        = {}
-        super().__init__(config, cxparams, scaninfo, results)
+        super().__init__(config, cxparams, scaninfo, results, counters, countersall)
 
 
     def __initialize(self) :
@@ -910,7 +910,8 @@ class jirafeedback(basefeedback) :
                         if xvalue :
                             fields.append( { jiraname : xvalue } )
                     elif (basetype == 'user') :
-                        xvalue = self.__validate_jira_user( self.jiraparams.projectid, str(fieldvalue) )
+                        xvalue = self.__validate_jira_user( self.jiraparams.project, str(fieldvalue) )
+                        # xvalue = self.__validate_jira_user( self.jiraparams.projectid, str(fieldvalue) )
                         if not xvalue :
                             cxlogger.logwarning( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
@@ -1180,11 +1181,14 @@ class jirafeedback(basefeedback) :
             self.__processtagfields( projecttags = False ) 
 
         # Go one scanner at the time
-        if len(self.results.sast) > 0 :
+        if self.countersall.sast.total > 0 :
+        # if len(self.results.sast) > 0 :
             self.__processscannerresults( 'sast' )
-        if len(self.results.sca) > 0 :
+        if self.countersall.sca.total > 0 :
+        # if len(self.results.sca) > 0 :
             self.__processscannerresults( 'sca' )
-        if len(self.results.kics) > 0 :
+        if self.countersall.kics.total > 0 :
+        # if len(self.results.kics) > 0 :
             self.__processscannerresults( 'kics' )
 
         return
