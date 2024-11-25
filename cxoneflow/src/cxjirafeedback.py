@@ -215,17 +215,25 @@ class jirafeedback(basefeedback) :
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
         user = None
+        keyname = 'accountId'
         if not self.__jirausers or projectid not in self.__jirausers.keys() :
             self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
         users = self.__jirausers.get(projectid)
         if users :
+            if len(users) > 0 :
+                user = dict(users[0])
+                if keyname not in user.keys() :
+                    if 'key' in user.keys() :
+                        keyname = 'key'
+                    else :
+                        keyname = None
             user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
             if not user :
                 user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
-            if not user :
-                user = next( filter( lambda el: el['accountId'].lower() == useremailorname.lower(), users ), None )
-        if user :
-            return user['accountId']
+            if not user and keyname :
+                user = next( filter( lambda el: el[keyname].lower() == useremailorname.lower(), users ), None )
+        if user and keyname :
+            return user[keyname]
         else :
             return None
 
