@@ -216,10 +216,10 @@ class jirafeedback(basefeedback) :
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
         user = None
-        self.userkeyname        = 'accountId'
         if not self.__jirausers or projectid not in self.__jirausers.keys() :
             self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
         users = self.__jirausers.get(projectid)
+        cxlogger.logwarning( 'Users found: ' + str(len(users)) )
         if users :
             if len(users) > 0 :
                 user = dict(users[0])
@@ -924,6 +924,7 @@ class jirafeedback(basefeedback) :
                         if not xvalue :
                             cxlogger.logwarning( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
+                            cxlogger.logwarning( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
                             fields.append( { jiraname : { self.userkeyname: xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
