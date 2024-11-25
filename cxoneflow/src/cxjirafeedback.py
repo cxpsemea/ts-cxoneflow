@@ -217,9 +217,16 @@ class jirafeedback(basefeedback) :
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
         user = None
         if not self.__jirausers or projectid not in self.__jirausers.keys() :
-            self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
+            try :
+                self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
+            except HTTPError as err :
+                cxlogger.verbose( 'Get Users HTTPError ' + str(err.response.status_code) + ' - ' + err.response.text )
+            except Exception as ex :
+                cxlogger.verbose( 'Get Users Exception ' + str(ex) )
+
         users = self.__jirausers.get(projectid)
         cxlogger.logwarning( 'Users found: ' + str(len(users)) )
+
         if users :
             if len(users) > 0 :
                 user = dict(users[0])
@@ -922,9 +929,9 @@ class jirafeedback(basefeedback) :
                         xvalue = self.__validate_jira_user( self.jiraparams.project, str(fieldvalue) )
                         # xvalue = self.__validate_jira_user( self.jiraparams.projectid, str(fieldvalue) )
                         if not xvalue :
-                            cxlogger.logwarning( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
+                            cxlogger.verbose( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
-                            cxlogger.logwarning( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
+                            cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
                             fields.append( { jiraname : { self.userkeyname: xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
