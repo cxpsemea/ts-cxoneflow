@@ -46,6 +46,7 @@ class jirafeedback(basefeedback) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
+        self.userkeyname        = 'accountId'
         # A cache for assignable users so we do not have to keep calling
         self.__jirausers        = {}
         super().__init__(config, cxparams, scaninfo, results, counters, countersall)
@@ -215,25 +216,25 @@ class jirafeedback(basefeedback) :
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
         user = None
-        keyname = 'accountId'
+        self.userkeyname        = 'accountId'
         if not self.__jirausers or projectid not in self.__jirausers.keys() :
             self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
         users = self.__jirausers.get(projectid)
         if users :
             if len(users) > 0 :
                 user = dict(users[0])
-                if keyname not in user.keys() :
+                if self.userkeyname not in user.keys() :
                     if 'key' in user.keys() :
-                        keyname = 'key'
+                        self.userkeyname = 'key'
                     else :
-                        keyname = None
+                        self.userkeyname = None
             user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
             if not user :
                 user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
-            if not user and keyname :
-                user = next( filter( lambda el: el[keyname].lower() == useremailorname.lower(), users ), None )
-        if user and keyname :
-            return user[keyname]
+            if not user and self.userkeyname :
+                user = next( filter( lambda el: el[self.userkeyname].lower() == useremailorname.lower(), users ), None )
+        if user and self.userkeyname :
+            return user[self.userkeyname]
         else :
             return None
 
@@ -923,7 +924,7 @@ class jirafeedback(basefeedback) :
                         if not xvalue :
                             cxlogger.logwarning( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
-                            fields.append( { jiraname : { 'id': xvalue } } )
+                            fields.append( { jiraname : { self.userkeyname: xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
                     elif jiratype == 'component' :
