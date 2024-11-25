@@ -21,8 +21,10 @@ class cxprocessor(baserunner) :
         self.__sca_packages         = []
         # Scan info
         self.__scan                 = cxscan()
-        # Counters
+        # Counters results elegible
         self.__counters             = cxresultscounters()
+        # Counters all results
+        self.__countersall          = cxresultscounters()
         # Results aggregated
         self.__results              = cxresults()
         # Params
@@ -38,6 +40,11 @@ class cxprocessor(baserunner) :
     @property
     def counters(self) :
         return self.__counters
+    
+    
+    @property
+    def countersall(self) :
+        return self.__countersall
 
 
     @property
@@ -126,6 +133,9 @@ class cxprocessor(baserunner) :
                 # Check CWE 
                 if elegible and ( self.cxparams.sast_filter_cwes and str(result['vulnerabilityDetails']['cweId']).lower() not in self.cxparams.sast_filter_cwes ) :
                     elegible = False
+                    
+                # Update all counters
+                self.__countersall.getcounter(scanner).updatecount(result)
                 
                 # If elegible, aggregate it
                 if elegible :
@@ -175,6 +185,9 @@ class cxprocessor(baserunner) :
                     else :
                         elegible = False
                         
+                # Update all counters
+                self.__countersall.getcounter(scanner).updatecount(result)
+                        
                 # If elegible, aggregate it
                 if elegible :
                     # Increment counters
@@ -200,6 +213,9 @@ class cxprocessor(baserunner) :
                 # Check categories (query names)
                 if elegible and ( self.cxparams.kics_filter_categories and str(result['queryName']).lower() not in self.cxparams.kics_filter_categories ) :
                     elegible = False
+                    
+                # Update all counters
+                self.__countersall.getcounter(scanner).updatecount(result)
                     
                 # If elegible, aggregate it
                 if elegible :
@@ -287,7 +303,6 @@ class cxprocessor(baserunner) :
                     # Next page
                     page += 1
                     data = self.conn.cxone.get( '/api/results?offset=' + str(page) + '&limit=' + str(limit) + '&scan-id=' + self.cxparams.scanid )
-
             
             # Get kics scan results (required to obtain the result IDs for links)
             if 'kics' in self.cxparams.filter_scanners :

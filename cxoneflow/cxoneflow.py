@@ -66,15 +66,15 @@ class cxoneflow(baserunner) :
             # From params, Namespace/Repo/Branch provided
             if cxparams.namespace and cxparams.repository and cxparams.branch :
                 paramsok        = True
-                cxlogger.verbose( 'Arguments: namespace - ' + cxparams.namespace + ', repository - ' + cxparams.repository + ', branch - ' + cxparams.branch )
+                cxlogger.verbose( 'Arguments: namespace - "' + cxparams.namespace + '", repository - "' + cxparams.repository + '", branch - "' + cxparams.branch + '"' )
             # From params, only application and repo provided
             elif cxparams.application and cxparams.repository  :
                 paramsok        = True
-                cxlogger.verbose( 'Arguments: app -  ' + cxparams.application + ', repository - ' + cxparams.repository )
+                cxlogger.verbose( 'Arguments: app - "' + cxparams.application + '", repository - "' + cxparams.repository + '"' )
             # From params, only application
             elif cxparams.application :
                 paramsok        = True
-                cxlogger.verbose( 'Arguments: app - ' + cxparams.application )
+                cxlogger.verbose( 'Arguments: app - "' + cxparams.application + '"' )
             if not paramsok :
                 raise Exception( 'Namespace/Repo/Branch or App must be provided in order to properly track')
 
@@ -121,6 +121,7 @@ class cxoneflow(baserunner) :
             has_results = False
             scandata    = None
             counters    = None
+            countersall = None
             results     = None
 
             # Process scan results
@@ -133,12 +134,16 @@ class cxoneflow(baserunner) :
                 feeder      = None
                 scandata    = runner.scan
                 counters    = runner.counters
+                countersall = runner.countersall
                 results     = runner.results
+                
+                countersall.sast
 
-                if (len(results.sast) > 0) or (len(results.sca) > 0) or (len(results.kics) > 0 ) :
+                # if (len(results.sast) > 0) or (len(results.sca) > 0) or (len(results.kics) > 0 ) :
+                if (countersall.sast.total > 0) or (countersall.sca.total > 0) or (countersall.kics.total > 0 ) :
                     # Create tickets ?
                     if cxparams.bug_tracker == 'jira' :
-                        feeder = jirafeedback( self.config, cxparams, scandata, results )
+                        feeder = jirafeedback( self.config, cxparams, scandata, results, counters, countersall )
                     if feeder :
                         feeder.processfeedback()
                     else :
