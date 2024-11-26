@@ -250,18 +250,18 @@ class jirafeedback(basefeedback) :
                 if xkeyname :
                     for xuser in users :
                         xkey    = xuser[xkeyname]
-                        xname   = str(xuser['displayName']).lower()
-                        xmail   = str(xuser['emailAddress']).lower()
-                        if not xmail :
-                            xmail = xsearch
-                        if not xname :
-                            xname = xsearch
+                        name   = str(xuser['displayName']).lower()
+                        mail   = str(xuser['emailAddress']).lower()
+                        if not mail :
+                            mail = xsearch
+                        if not name :
+                            name = xsearch
                         self.__jirausers.append( { 'project': projectid,
                                                   'id': xkey,
-                                                  'xname': xname,
-                                                  'xemail': xmail,
-                                                  'name': xuser['displayName'],
-                                                  'email': xuser['displayName'] 
+                                                  'name': name,
+                                                  'email': mail,
+                                                  'xname': xuser['displayName'],
+                                                  'xemail': xuser['displayName'] 
                                                   })
             user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
         # Return
@@ -269,7 +269,7 @@ class jirafeedback(basefeedback) :
             if xkeyname == 'accountId' :
                 return 'id', user['id']
             else :
-                return 'name', user['name']
+                return 'name', user['xname']
         else :
             return None, None
 
