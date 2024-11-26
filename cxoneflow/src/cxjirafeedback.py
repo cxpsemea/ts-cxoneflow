@@ -218,7 +218,7 @@ class jirafeedback(basefeedback) :
         xkeyname = 'accountId'
         xsearch: str = useremailorname.lower()
         # Check if the user is already in the cache
-        user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
+        user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch or el['disp'] == xsearch), self.__jirausers ), None )
         # If not found, try finding it with the api
         if not user :
             base_url = self.jira.resource_url("user/assignable/search")
@@ -249,27 +249,31 @@ class jirafeedback(basefeedback) :
                 # Add to cache
                 if xkeyname :
                     for xuser in users :
+                        if 'name' in xuser.keys() :
+                            xname = xuser['name']
+                        else :
+                            xname = xuser['displayName']
                         xkey    = xuser[xkeyname]
-                        name   = str(xuser['displayName']).lower()
-                        mail   = str(xuser['emailAddress']).lower()
-                        if not mail :
-                            mail = xsearch
-                        if not name :
-                            name = xsearch
+                        xmail   = xuser['emailAddress']
+                        if not xmail :
+                            xmail = xsearch
+                        if not xname :
+                            xname = xsearch
                         self.__jirausers.append( { 'project': projectid,
                                                   'id': xkey,
-                                                  'name': name,
-                                                  'email': mail,
-                                                  'xname': xuser['displayName'],
-                                                  'xemail': xuser['emailAddress'] 
+                                                  'name': xname.lower(),
+                                                  'email': xmail.lower(),
+                                                  'disp': xuser['displayName'].lower(),
+                                                  'xname': xname,
+                                                  'xemail': xmail 
                                                   })
-            user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
+            user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch or el['disp'] == xsearch), self.__jirausers ), None )
         # Return
         if user :
             if xkeyname == 'accountId' :
                 return 'id', user['id']
             else :
-                return 'name', user['id']
+                return 'name', user['xname']
         else :
             return None, None
 
