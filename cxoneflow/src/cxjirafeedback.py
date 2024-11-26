@@ -46,7 +46,7 @@ class jirafeedback(basefeedback) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
-        # self.userkeyname        = 'accountId'
+        self.userkeyname        = None
         # A cache for assignable users so we do not have to keep calling
         self.__jirausers        = []
         super().__init__(config, cxparams, scaninfo, results, counters, countersall)
@@ -215,7 +215,6 @@ class jirafeedback(basefeedback) :
 
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
-        xkeyname = 'accountId'
         xsearch: str = useremailorname.lower()
         # Check if the user is already in the cache
         user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch or el['disp'] == xsearch), self.__jirausers ), None )
@@ -241,19 +240,21 @@ class jirafeedback(basefeedback) :
             if users and len(users) > 0 :
                 # Check the keyname
                 xuser = users[0]
-                if xkeyname not in xuser.keys() :
-                    if 'key' in xuser.keys() :
-                        xkeyname = 'key'
+                if not self.userkeyname :
+                    if 'accountId' in xuser.keys() :
+                        self.userkeyname = 'accountId'
+                    elif 'key' in xuser.keys() :
+                        self.userkeyname = 'key'
                     else :
-                        xkeyname = None
+                        self.userkeyname = None
                 # Add to cache
-                if xkeyname :
+                if self.userkeyname :
                     for xuser in users :
                         if 'name' in xuser.keys() :
                             xname = xuser['name']
                         else :
                             xname = xuser['displayName']
-                        xkey    = xuser[xkeyname]
+                        xkey    = xuser[self.userkeyname]
                         xmail   = xuser['emailAddress']
                         if not xmail :
                             xmail = xsearch
@@ -270,7 +271,7 @@ class jirafeedback(basefeedback) :
             user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch or el['disp'] == xsearch), self.__jirausers ), None )
         # Return
         if user :
-            if xkeyname == 'accountId' :
+            if self.userkeyname == 'accountId' :
                 return 'id', user['id']
             else :
                 return 'name', user['xname']
