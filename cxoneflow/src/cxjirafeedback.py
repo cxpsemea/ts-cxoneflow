@@ -964,7 +964,7 @@ class jirafeedback(basefeedback) :
                         if not xvalue :
                             cxlogger.verbose( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
-                            cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + xkey + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
+                            # cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + xkey + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
                             fields.append( { jiraname : { str(xkey) : str(xvalue).strip() } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
