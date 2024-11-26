@@ -46,9 +46,9 @@ class jirafeedback(basefeedback) :
         # Read JIRA parameters from config
         self.jiraparams         = jiraproperties(config = config)
         self.jira               = None
-        self.userkeyname        = 'accountId'
+        # self.userkeyname        = 'accountId'
         # A cache for assignable users so we do not have to keep calling
-        self.__jirausers        = {}
+        self.__jirausers        = []
         super().__init__(config, cxparams, scaninfo, results, counters, countersall)
 
 
@@ -216,34 +216,97 @@ class jirafeedback(basefeedback) :
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
         user = None
-        if not self.__jirausers or projectid not in self.__jirausers.keys() :
+        xkeyname = 'accountId'
+        # Check if the user is already in the cache
+        if not user :
+            user = next( filter( lambda el: el['project'] == projectid and el['email'] == useremailorname, self.__jirausers ), None )
+        if not user :
+            user = next( filter( lambda el: el['project'] == projectid and el['name'] == useremailorname, self.__jirausers ), None )
+        if not user :
+            user = next( filter( lambda el: el['project'] == projectid and el['id'] == useremailorname, self.__jirausers ), None )
+        # If not found, try finding it with the api
+        if not user :
+            base_url = self.jira.resource_url("user/assignable/search")
+            # Search using "username", not compatible with GDPR protected
+            url1 = "{base_url}?project={project_key}&username={uname}&maxResults=2".format(
+                base_url=base_url,
+                project_key=projectid,
+                uname=useremailorname,
+            )
+            # Search using "query", compatible with GDPR protected
+            url2 = "{base_url}?project={project_key}&query={uname}&maxResults=2".format(
+                base_url=base_url,
+                project_key=projectid,
+                uname=useremailorname,
+            )
             try :
-                self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
-            except HTTPError as err :
-                cxlogger.verbose( 'Get Users HTTPError ' + str(err.response.status_code) + ' - ' + err.response.text )
-            except Exception as ex :
-                cxlogger.verbose( 'Get Users Exception ' + str(ex) )
-
-        users = self.__jirausers.get(projectid)
-        cxlogger.logwarning( 'Users found: ' + str(len(users)) )
-
-        if users :
-            if len(users) > 0 :
-                user = dict(users[0])
-                if self.userkeyname not in user.keys() :
-                    if 'key' in user.keys() :
-                        self.userkeyname = 'key'
+                users = self.jira.jira_get(url1)
+            except Exception as err :
+                users = self.jira.jira_get(url2)
+            if users and len(users) > 0 :
+                # Check the keyname
+                xuser = users[0]
+                if xkeyname not in xuser.keys() :
+                    if 'key' in xuser.keys() :
+                        xkeyname = 'key'
                     else :
-                        self.userkeyname = None
-            user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
+                        xkeyname = None
+                # Add to cache
+                if xkeyname :
+                    for xuser in users :
+                        ukey    = xuser[xkeyname]
+                        uname   = xuser['displayName']
+                        umail   = xuser['emailAddress']
+                        if not umail :
+                            umail = useremailorname
+                        if not uname :
+                            uname = useremailorname
+                        self.__jirausers.append( { 'project': projectid,
+                                                  'id': ukey,
+                                                  'name': uname,
+                                                  'email': umail })
             if not user :
-                user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
-            if not user and self.userkeyname :
-                user = next( filter( lambda el: el[self.userkeyname].lower() == useremailorname.lower(), users ), None )
-        if user and self.userkeyname :
-            return user[self.userkeyname]
+                user = next( filter( lambda el: el['project'] == projectid and el['email'] == useremailorname, self.__jirausers ), None )
+            if not user :
+                user = next( filter( lambda el: el['project'] == projectid and el['name'] == useremailorname, self.__jirausers ), None )
+            if not user :
+                user = next( filter( lambda el: el['project'] == projectid and el['id'] == useremailorname, self.__jirausers ), None )
+        # Return
+        if user and xkeyname :
+            return user['id']
         else :
             return None
+
+    # def __validate_jira_user( self, projectid: str, useremailorname: str ) :
+    #     user = None
+    #     if not self.__jirausers or projectid not in self.__jirausers.keys() :
+    #         try :
+    #             self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
+    #         except HTTPError as err :
+    #             cxlogger.verbose( 'Get Users HTTPError ' + str(err.response.status_code) + ' - ' + err.response.text )
+    #         except Exception as ex :
+    #             cxlogger.verbose( 'Get Users Exception ' + str(ex) )
+
+    #     users = self.__jirausers.get(projectid)
+    #     cxlogger.logwarning( 'Users found: ' + str(len(users)) )
+
+    #     if users :
+    #         if len(users) > 0 :
+    #             user = dict(users[0])
+    #             if self.userkeyname not in user.keys() :
+    #                 if 'key' in user.keys() :
+    #                     self.userkeyname = 'key'
+    #                 else :
+    #                     self.userkeyname = None
+    #         user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
+    #         if not user :
+    #             user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
+    #         if not user and self.userkeyname :
+    #             user = next( filter( lambda el: el[self.userkeyname].lower() == useremailorname.lower(), users ), None )
+    #     if user and self.userkeyname :
+    #         return user[self.userkeyname]
+    #     else :
+    #         return None
 
 
     # Get existing JIRA tickets for scanner
@@ -931,8 +994,8 @@ class jirafeedback(basefeedback) :
                         if not xvalue :
                             cxlogger.verbose( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
-                            cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
-                            fields.append( { jiraname : { self.userkeyname: xvalue } } )
+                        #     cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
+                            fields.append( { jiraname : { 'id': xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
                     elif jiratype == 'component' :
@@ -994,7 +1057,6 @@ class jirafeedback(basefeedback) :
                         cxlogger.logwarning( 'Field type "' + jiratype + '" is not a valid option' )
 
         return fields
-        
 
 
     def __processjiraexception( self, creating: bool, retrieving: bool, he: HTTPError ) :

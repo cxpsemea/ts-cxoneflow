@@ -84,7 +84,15 @@ class cxjiraapi(object) :
         data = self.jira.get_server_info()
         # Version string in the format: 9.16.0
         # Deployment type string of "", "Server", "DataCenter" 
-        return data['version'], data['deploymentType']      
+        return data['version'], data['deploymentType']
+    
+    
+    def resource_url(self, resource) :
+        return self.jira.resource_url(resource)
+    
+    
+    def jira_get(self, path) :
+        return self.jira.get(path)
 
 
     def jql(self, jqlquery: str, fields: str = '*all', start: int = 0, limit = None, expand = None, validate_query = None ) :
