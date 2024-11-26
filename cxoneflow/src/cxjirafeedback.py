@@ -261,7 +261,7 @@ class jirafeedback(basefeedback) :
                                                   'name': name,
                                                   'email': mail,
                                                   'xname': xuser['displayName'],
-                                                  'xemail': xuser['displayName'] 
+                                                  'xemail': xuser['emailAddress'] 
                                                   })
             user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
         # Return
@@ -269,7 +269,7 @@ class jirafeedback(basefeedback) :
             if xkeyname == 'accountId' :
                 return 'id', user['id']
             else :
-                return 'name', user['xemail']
+                return 'name', user['id']
         else :
             return None, None
 
