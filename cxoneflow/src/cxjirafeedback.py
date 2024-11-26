@@ -215,15 +215,10 @@ class jirafeedback(basefeedback) :
 
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
-        user = None
         xkeyname = 'accountId'
+        xsearch: str = useremailorname.lower()
         # Check if the user is already in the cache
-        if not user :
-            user = next( filter( lambda el: el['project'] == projectid and el['email'] == useremailorname, self.__jirausers ), None )
-        if not user :
-            user = next( filter( lambda el: el['project'] == projectid and el['name'] == useremailorname, self.__jirausers ), None )
-        if not user :
-            user = next( filter( lambda el: el['project'] == projectid and el['id'] == useremailorname, self.__jirausers ), None )
+        user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
         # If not found, try finding it with the api
         if not user :
             base_url = self.jira.resource_url("user/assignable/search")
@@ -255,58 +250,22 @@ class jirafeedback(basefeedback) :
                 if xkeyname :
                     for xuser in users :
                         ukey    = xuser[xkeyname]
-                        uname   = xuser['displayName']
-                        umail   = xuser['emailAddress']
+                        uname   = str(xuser['displayName']).lower()
+                        umail   = str(xuser['emailAddress']).lower()
                         if not umail :
-                            umail = useremailorname
+                            umail = xsearch
                         if not uname :
-                            uname = useremailorname
+                            uname = xsearch
                         self.__jirausers.append( { 'project': projectid,
                                                   'id': ukey,
                                                   'name': uname,
                                                   'email': umail })
-            if not user :
-                user = next( filter( lambda el: el['project'] == projectid and el['email'] == useremailorname, self.__jirausers ), None )
-            if not user :
-                user = next( filter( lambda el: el['project'] == projectid and el['name'] == useremailorname, self.__jirausers ), None )
-            if not user :
-                user = next( filter( lambda el: el['project'] == projectid and el['id'] == useremailorname, self.__jirausers ), None )
+            user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
         # Return
-        if user and xkeyname :
+        if user :
             return user['id']
         else :
             return None
-
-    # def __validate_jira_user( self, projectid: str, useremailorname: str ) :
-    #     user = None
-    #     if not self.__jirausers or projectid not in self.__jirausers.keys() :
-    #         try :
-    #             self.__jirausers[projectid] = self.jira.projectassignableusers(projectid)
-    #         except HTTPError as err :
-    #             cxlogger.verbose( 'Get Users HTTPError ' + str(err.response.status_code) + ' - ' + err.response.text )
-    #         except Exception as ex :
-    #             cxlogger.verbose( 'Get Users Exception ' + str(ex) )
-
-    #     users = self.__jirausers.get(projectid)
-    #     cxlogger.logwarning( 'Users found: ' + str(len(users)) )
-
-    #     if users :
-    #         if len(users) > 0 :
-    #             user = dict(users[0])
-    #             if self.userkeyname not in user.keys() :
-    #                 if 'key' in user.keys() :
-    #                     self.userkeyname = 'key'
-    #                 else :
-    #                     self.userkeyname = None
-    #         user = next( filter( lambda el: el['emailAddress'].lower() == useremailorname.lower(), users ), None )
-    #         if not user :
-    #             user = next( filter( lambda el: el['displayName'].lower() == useremailorname.lower(), users ), None )
-    #         if not user and self.userkeyname :
-    #             user = next( filter( lambda el: el[self.userkeyname].lower() == useremailorname.lower(), users ), None )
-    #     if user and self.userkeyname :
-    #         return user[self.userkeyname]
-    #     else :
-    #         return None
 
 
     # Get existing JIRA tickets for scanner
