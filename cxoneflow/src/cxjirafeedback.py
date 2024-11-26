@@ -249,23 +249,29 @@ class jirafeedback(basefeedback) :
                 # Add to cache
                 if xkeyname :
                     for xuser in users :
-                        ukey    = xuser[xkeyname]
-                        uname   = str(xuser['displayName']).lower()
-                        umail   = str(xuser['emailAddress']).lower()
-                        if not umail :
-                            umail = xsearch
-                        if not uname :
-                            uname = xsearch
+                        xkey    = xuser[xkeyname]
+                        xname   = str(xuser['displayName']).lower()
+                        xmail   = str(xuser['emailAddress']).lower()
+                        if not xmail :
+                            xmail = xsearch
+                        if not xname :
+                            xname = xsearch
                         self.__jirausers.append( { 'project': projectid,
-                                                  'id': ukey,
-                                                  'name': uname,
-                                                  'email': umail })
+                                                  'id': xkey,
+                                                  'xname': xname,
+                                                  'xemail': xmail,
+                                                  'name': xuser['displayName'],
+                                                  'email': xuser['displayName'] 
+                                                  })
             user = next( filter( lambda el: el['project'] == projectid and (el['email'] == xsearch or el['name'] == xsearch or el['id'] == xsearch ), self.__jirausers ), None )
         # Return
         if user :
-            return user['id']
+            if xkeyname == 'accountId' :
+                return 'id', user['id']
+            else :
+                return 'name', user['name']
         else :
-            return None
+            return None, None
 
 
     # Get existing JIRA tickets for scanner
@@ -948,13 +954,13 @@ class jirafeedback(basefeedback) :
                         if xvalue :
                             fields.append( { jiraname : xvalue } )
                     elif (basetype == 'user') :
-                        xvalue = self.__validate_jira_user( self.jiraparams.project, str(fieldvalue) )
+                        xkey, xvalue = self.__validate_jira_user( self.jiraparams.project, str(fieldvalue) )
                         # xvalue = self.__validate_jira_user( self.jiraparams.projectid, str(fieldvalue) )
                         if not xvalue :
                             cxlogger.verbose( 'Invalid user "' + str(fieldvalue) + '" for jira field type "' + jiratype + '"' )
                         else :
                         #     cxlogger.verbose( 'Setting user for "' + jiraname + '", key "' + self.userkeyname + '", value "' + xvalue + '", from "' + fieldvalue + '"' )
-                            fields.append( { jiraname : { 'id': xvalue } } )
+                            fields.append( { jiraname : { xkey: xvalue } } )
                     elif jiratype == 'text' :
                         fields.append( { jiraname : str(fieldvalue) } )
                     elif jiratype == 'component' :
