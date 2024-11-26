@@ -269,7 +269,7 @@ class jirafeedback(basefeedback) :
             if xkeyname == 'accountId' :
                 return 'id', user['id']
             else :
-                return 'name', user['xname']
+                return 'name', user['xemail']
         else :
             return None, None
 
