@@ -119,10 +119,12 @@ class cxscaresult(cxresult) :
         self.matchtype: str             = scapackage['matchType']
         self.ismalicious: bool          = scapackage['isMalicious']
         self.issupplychain: bool        = False
-        risks = scapackage['risks']['supplyChainRisks']
-        riskcount = risks['critical'] + risks['high'] + risks['medium'] + risks['low']
-        if riskcount > 0 :
-            self.issupplychain: bool    = True
+        if scapackage.get('risks') :
+            if scapackage['risks'].get('supplyChainRisks') :
+                risks = scapackage['risks']['supplyChainRisks']
+                riskcount = risks['critical'] + risks['high'] + risks['medium'] + risks['low']
+                if riskcount > 0 :
+                    self.issupplychain: bool    = True
         self.isdev: bool                = scapackage['isDev']
         self.istest: bool               = scapackage['isTest']
         self.releasedate: str           = scapackage['releaseDate']
