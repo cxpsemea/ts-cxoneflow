@@ -86,6 +86,7 @@ cxconfigdefaults = {
         "description-prefix": None,
         "description-postfix": None,
         "update-comment": False,
+        "tagged-fields-create-only": True,
         "priorities": {
             "Critical": "High",
             "High": "High",

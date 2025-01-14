@@ -114,7 +114,7 @@ class jiraproperties(object) :
                 self.kicsissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
 
         # Use labels for JIRA tickets seraching
-        self.searchwithlablels              = config.value( 'jira.ticket-search-with-labels', True )
+        self.searchwithlablels              = config.value( 'jira.search-with-labels', True )
         # Fields defined in project/scan tags
         self.taggedfieldscreateonly         = config.value( 'jira.tagged-fields-create-only', False )
 

@@ -283,17 +283,16 @@ class jirafeedback(basefeedback) :
     # Get existing JIRA tickets for scanner
     def __retrievejiratickets( self, scanner: str ) :
         jqlex: str = None
-        # CxFlow compatible always use labels (for backwards compatibility)
-        if self.cxparams.legacymode or self.jiraparams.searchwithlablels :
-            # Construct jql
-            jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_LEGACY + ' )'
-            if scanner == 'sast' :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SAST
-            elif scanner == 'sca' :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SCA
-            elif scanner == 'kics' :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
-            # CxFlow compatible
+        # Construct jql
+        jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_LEGACY + ' )'
+        if scanner == 'sast' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SAST
+        elif scanner == 'sca' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SCA
+        elif scanner == 'kics' :
+            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
+        # CxFlow compatible
+        if self.jiraparams.searchwithlablels :
             if self.cxparams.legacymode :
                 # From params, Namespace/Repo/Branch provided
                 if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
@@ -689,17 +688,18 @@ class jirafeedback(basefeedback) :
             elif scanner == 'kics' :
                 labels.append( self.JIRA_ISSUE_LABEL_KICS )
             # From params, namespace and application and repo provided
-            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
-                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-                labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
-            # From params, only application and repo provided
-            elif self.cxparams.application and self.cxparams.repository  :
-                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
-                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-            # From params, only application
-            elif self.cxparams.application :
-                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+            if not self.jiraparams.taggedfieldscreateonly :
+                if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                    labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+                    labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
+                # From params, only application and repo provided
+                elif self.cxparams.application and self.cxparams.repository  :
+                    labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+                # From params, only application
+                elif self.cxparams.application :
+                    labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
             
         else :    
             labels.append( self.JIRA_CX_PRODUCT )
@@ -710,15 +710,17 @@ class jirafeedback(basefeedback) :
             elif scanner == 'kics' :
                 labels.append( self.JIRA_ISSUE_LABEL_KICS )
             labels.append( self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch )
-            if self.cxparams.namespace :
-                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
-            else :
-                labels.append( self.jiraparams.ownerlabelprefix + ':n/a' )
-            labels.append( self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname )
-            if self.cxparams.repository :
-                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-            else :
-                labels.append( self.jiraparams.repolabelprefix + ':' + self.scaninfo.projectname )
+            
+            if not self.jiraparams.taggedfieldscreateonly :
+                if self.cxparams.namespace :
+                    labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+                else :
+                    labels.append( self.jiraparams.ownerlabelprefix + ':n/a' )
+                labels.append( self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname )
+                if self.cxparams.repository :
+                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+                else :
+                    labels.append( self.jiraparams.repolabelprefix + ':' + self.scaninfo.projectname )
             
         return labels
         
@@ -1172,6 +1174,8 @@ class jirafeedback(basefeedback) :
 
         # Get existing jira tickets for scanner
         cxlogger.verbose( 'Check existing ' + scanner + ' tickets' )
+        # This can retrieve the tickets for all scanners if parameter 
+        # ticket-search-with-labels is false
         jiratickets = self.__retrievejiratickets( scanner ) 
         if len(jiratickets) == 0 :
             cxlogger.verbose( '- No existing ' + scanner + ' tickets found' )
@@ -1179,7 +1183,7 @@ class jirafeedback(basefeedback) :
             cxlogger.verbose( '- Found ' + str(len(jiratickets)) + ' ' + scanner + ' tickets' )
             
         # Identify the results list
-        resultslist = None        
+        resultslist = None
         if scanner == 'sast' :
             resultslist = self.results.sast
         elif scanner == 'sca' :
@@ -1187,8 +1191,11 @@ class jirafeedback(basefeedback) :
         elif scanner == 'kics' :
             resultslist = self.results.kics
         if not resultslist :
-            cxlogger.verbose( '- No ' + scanner + ' results found to process' )
-            return
+            if scanner in self.scaninfo.engines :
+                resultslist = []
+            else :
+                cxlogger.verbose( '- No ' + scanner + ' results found to process' )
+                return
         
         cxlogger.verbose( '- Found ' + str(len(resultslist)) + ' ' + scanner + ' results to process' )
        
@@ -1204,6 +1211,7 @@ class jirafeedback(basefeedback) :
                 if ticketsummary == jiraticketsummary :
                     cxresult = ticket
                     break
+                
             # Shall close it ?
             if not cxresult and (str(jirastatus).lower() in self.jiraparams.openstatus) :
                 if self.jiraparams.closetransition :
@@ -1237,14 +1245,14 @@ class jirafeedback(basefeedback) :
             self.__processtagfields( projecttags = False ) 
 
         # Go one scanner at the time
-        if self.countersall.sast.total > 0 :
-        # if len(self.results.sast) > 0 :
+        
+        
+        
+        if 'sast' in self.scaninfo.engines :
             self.__processscannerresults( 'sast' )
-        if self.countersall.sca.total > 0 :
-        # if len(self.results.sca) > 0 :
+        if 'sca' in self.scaninfo.engines :
             self.__processscannerresults( 'sca' )
-        if self.countersall.kics.total > 0 :
-        # if len(self.results.kics) > 0 :
+        if 'kics' in self.scaninfo.engines :
             self.__processscannerresults( 'kics' )
 
         return
