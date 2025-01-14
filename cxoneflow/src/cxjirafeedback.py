@@ -147,7 +147,7 @@ class jirafeedback(basefeedback) :
                                 'jiratype': jira_type,
                                 'label': jiralabel,
                                 'default': tagvalue,
-                                'skipupdate': False, 
+                                'skipupdate': self.jiraparams.taggedfieldscreateonly, 
                                 'offset': 0,
                                 'basetype': jirabasetype,
                                 'systype': jirasystype,
@@ -155,7 +155,7 @@ class jirafeedback(basefeedback) :
                                 'operations': jiraoperations }
                     self.jiraparams.fields.append(map)
 
-        
+
 
     def __getscuritylevel( self, jirafieldname: str, value: str ) :
         jira_field = next( filter( lambda el: el['name'] == jirafieldname or el[self.jiraparams.issuefieldskey] == jirafieldname, self.jiraparams.issuefields ), None )
@@ -212,6 +212,7 @@ class jirafeedback(basefeedback) :
             pass
 
         return ''
+
 
 
     def __validate_jira_user( self, projectid: str, useremailorname: str ) :
@@ -281,37 +282,43 @@ class jirafeedback(basefeedback) :
 
     # Get existing JIRA tickets for scanner
     def __retrievejiratickets( self, scanner: str ) :
-        # Construct jql
-        jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_LEGACY + ' )'
-        if scanner == 'sast' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SAST
-        elif scanner == 'sca' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SCA
-        elif scanner == 'kics' :
-            jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
-        # CxFlow compatible
-        if self.cxparams.legacymode :
-            # From params, Namespace/Repo/Branch provided
-            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
-            # From params, only application and repo provided
-            elif self.cxparams.application and self.cxparams.repository  :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-            # From params, only application
-            elif self.cxparams.application :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-        else :
-            if self.scaninfo.branch :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch + '"'
-            if self.scaninfo.projectname :
-                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
+        jqlex: str = None
+        # CxFlow compatible always use labels (for backwards compatibility)
+        if self.cxparams.legacymode or self.jiraparams.searchwithlablels :
+            # Construct jql
+            jqlex = '( ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_PRODUCT + ' or ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_CX_LEGACY + ' )'
+            if scanner == 'sast' :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SAST
+            elif scanner == 'sca' :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_SCA
+            elif scanner == 'kics' :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
+            # CxFlow compatible
+            if self.cxparams.legacymode :
+                # From params, Namespace/Repo/Branch provided
+                if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
+                # From params, only application and repo provided
+                elif self.cxparams.application and self.cxparams.repository  :
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+                # From params, only application
+                elif self.cxparams.application :
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+            else :
+                if self.scaninfo.branch :
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch + '"'
+                if self.scaninfo.projectname :
+                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
     
         # Get it all. It uses paged gets of self.jiraparams.maxjqlresults per pages
         try :
-            issues = self.jira.projectgetissues( self.jiraparams.projectid, self.jiraparams.issuetypeid, jqlex, self.jiraparams.maxjqlresults )
+            issues = self.jira.projectgetissues( projectkey = self.jiraparams.projectid,
+                                                issuetypekey = self.jiraparams.issuetypeid,
+                                                extraquery = jqlex, 
+                                                pagesize = self.jiraparams.maxjqlresults )
         except HTTPError as e:
             raise Exception( self.__processjiraexception( False, True, e ) )
         except Exception as e:

@@ -112,11 +112,18 @@ class jiraproperties(object) :
                 self.kicsissuesummaryformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
             if not self.kicsissuesummarybranchformat :
                 self.kicsissuesummarybranchformat = '[PREFIX] [VULNERABILITY] @ [FILENAME][POSTFIX]'
-        
+
+        # Use labels for JIRA tickets seraching
+        self.searchwithlablels              = config.value( 'jira.ticket-search-with-labels', True )
+        # Fields defined in project/scan tags
+        self.taggedfieldscreateonly         = config.value( 'jira.tagged-fields-create-only', False )
+
         self.__adjustformatmasks()
         # Fields for project/issue type
         self.issuefields                    = None      # To be filled after connect
         self.issuefieldskey                 = 'key'     # To be checked after connect, JIRA Cloud has 'key', JIRA Server as 'fieldId'
+        # Fields defined in project/scan tags
+        self.tagfields_labels_createonly        = config.value( 'jira.tagged-fields-create-only.Labels', False )
         # Fields defined in config
         self.__fields                       = config.value( 'jira.fields' )
         self.__processcmdlinefields(config)
