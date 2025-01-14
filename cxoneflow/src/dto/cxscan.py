@@ -33,12 +33,30 @@ class cxscan(object) :
         self.created            = scandata['createdAt']
         self.updated            = scandata['updatedAt']
         self.initiator          = scandata['initiator']
-        self.engines            = scandata['engines']
+        self.engines            = []
         self.sourcetype         = scandata['sourceType']
         self.sourceorigin       = scandata['sourceOrigin']
         self.incremental        = False
         self.tags               = []
         self.tagstext           = None
+        # Check successfull ended scan and engines
+        succeed = True
+        engines = scandata['statusDetails']
+        for engine in engines :
+            if engine['name'] == 'sast' and engine['status'] == 'Completed' :
+                self.engines.append('sast')
+            elif engine['name'] == 'sca' and engine['status'] == 'Completed' :
+                self.engines.append('sca')
+            elif engine['name'] == 'kics' and engine['status'] == 'Completed' :
+                self.engines.append('kics')
+            elif engine['name'] == 'apisec' and engine['status'] == 'Completed' :
+                self.engines.append('apisec')
+            elif engine['name'] == 'containers' and engine['status'] == 'Completed' :
+                self.engines.append('containers')
+            elif engine['name'] == 'general' and engine['status'] != 'Completed' :
+                succeed = False
+        if not succeed :
+            self.engines = []
         # Project elements
         self.projectid          = scandata['projectId']
         self.projectname        = scandata['projectName']
