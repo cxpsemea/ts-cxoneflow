@@ -1245,14 +1245,12 @@ class jirafeedback(basefeedback) :
             self.__processtagfields( projecttags = False ) 
 
         # Go one scanner at the time
-        
-        
-        
-        if 'sast' in self.scaninfo.engines :
+    
+        if ('sast' in self.scaninfo.engines) and ('sast' in self.cxparams.filter_scanners) :
             self.__processscannerresults( 'sast' )
-        if 'sca' in self.scaninfo.engines :
+        if ('sca' in self.scaninfo.engines) and ('sca' in self.cxparams.filter_scanners) :
             self.__processscannerresults( 'sca' )
-        if 'kics' in self.scaninfo.engines :
+        if ('kics' in self.scaninfo.engines) and ('kics' in self.cxparams.filter_scanners) :
             self.__processscannerresults( 'kics' )
 
         return
