@@ -140,7 +140,10 @@ class cxoneflow(baserunner) :
                 countersall.sast
 
                 # if (len(results.sast) > 0) or (len(results.sca) > 0) or (len(results.kics) > 0 ) :
-                if (countersall.sast.total > 0) or (countersall.sca.total > 0) or (countersall.kics.total > 0 ) :
+                # if ('sast' in scandata.engines) or ('sca' in scandata.engines) or ('kics' in scandata.engines) :
+                if (('sast' in scandata.engines) and ('sast' in cxparams.filter_scanners)) or (('sca' in scandata.engines) and ('sca' in cxparams.filter_scanners)) or (('kics' in scandata.engines) and ('kics' in cxparams.filter_scanners)) :
+                # if ('sast' in self.scaninfo.engines) and ('sast' in self.cxparams.filter_scanners) :
+                # if (countersall.sast.total > 0) or (countersall.sca.total > 0) or (countersall.kics.total > 0 ) :
                     # Create tickets ?
                     if cxparams.bug_tracker == 'jira' :
                         feeder = jirafeedback( self.config, cxparams, scandata, results, counters, countersall )
