@@ -292,25 +292,24 @@ class jirafeedback(basefeedback) :
         elif scanner == 'kics' :
             jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = ' + self.JIRA_ISSUE_LABEL_KICS
         # CxFlow compatible
-        if self.jiraparams.searchwithlablels :
-            if self.cxparams.legacymode :
-                # From params, Namespace/Repo/Branch provided
-                if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
-                # From params, only application and repo provided
-                elif self.cxparams.application and self.cxparams.repository  :
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
-                # From params, only application
-                elif self.cxparams.application :
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
-            else :
-                if self.scaninfo.branch :
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch + '"'
-                if self.scaninfo.projectname :
-                    jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
+        if self.cxparams.legacymode :
+            # From params, Namespace/Repo/Branch provided
+            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch + '"'
+            # From params, only application and repo provided
+            elif self.cxparams.application and self.cxparams.repository  :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.repolabelprefix + ':' + self.cxparams.repository + '"'
+            # From params, only application
+            elif self.cxparams.application :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.applabelprefix + ':' + self.cxparams.application + '"'
+        else :
+            if self.scaninfo.branch :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch + '"'
+            if self.scaninfo.projectname :
+                jqlex = jqlex + ' and ' + self.jiraparams.labeltracker + ' = "' + self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname + '"'
     
         # Get it all. It uses paged gets of self.jiraparams.maxjqlresults per pages
         try :
@@ -688,18 +687,17 @@ class jirafeedback(basefeedback) :
             elif scanner == 'kics' :
                 labels.append( self.JIRA_ISSUE_LABEL_KICS )
             # From params, namespace and application and repo provided
-            if not self.jiraparams.taggedfieldscreateonly :
-                if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
-                    labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
-                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-                    labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
-                # From params, only application and repo provided
-                elif self.cxparams.application and self.cxparams.repository  :
-                    labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
-                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-                # From params, only application
-                elif self.cxparams.application :
-                    labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+            if self.cxparams.namespace and self.cxparams.repository and self.cxparams.branch :
+                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+                labels.append( self.jiraparams.branchlabelprefix + ':' + self.cxparams.branch )
+            # From params, only application and repo provided
+            elif self.cxparams.application and self.cxparams.repository  :
+                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+            # From params, only application
+            elif self.cxparams.application :
+                labels.append( self.jiraparams.applabelprefix + ':' + self.cxparams.application )
             
         else :    
             labels.append( self.JIRA_CX_PRODUCT )
@@ -711,16 +709,15 @@ class jirafeedback(basefeedback) :
                 labels.append( self.JIRA_ISSUE_LABEL_KICS )
             labels.append( self.jiraparams.branchlabelprefix + ':' + self.scaninfo.branch )
             
-            if not self.jiraparams.taggedfieldscreateonly :
-                if self.cxparams.namespace :
-                    labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
-                else :
-                    labels.append( self.jiraparams.ownerlabelprefix + ':n/a' )
-                labels.append( self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname )
-                if self.cxparams.repository :
-                    labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
-                else :
-                    labels.append( self.jiraparams.repolabelprefix + ':' + self.scaninfo.projectname )
+            if self.cxparams.namespace :
+                labels.append( self.jiraparams.ownerlabelprefix + ':' + self.cxparams.namespace )
+            else :
+                labels.append( self.jiraparams.ownerlabelprefix + ':n/a' )
+            labels.append( self.jiraparams.projectlabelprefix + ':' + self.scaninfo.projectname )
+            if self.cxparams.repository :
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.cxparams.repository )
+            else :
+                labels.append( self.jiraparams.repolabelprefix + ':' + self.scaninfo.projectname )
             
         return labels
         
@@ -1106,60 +1103,65 @@ class jirafeedback(basefeedback) :
         else :
         
             ticketkey = jiraticket.get('key')
-            current_status = jiraticket['fields']['status']['name']
-            reopened = False
-            # If it's not opened, let's reopen it
-            if (str(current_status).lower() in self.jiraparams.closedstatus) :
-                if self.jiraparams.opentransition :
+            
+            # >>> TEMP CONDITION TO REMOVE
+            if ticketkey in ['GINFOSEC-75333', 'GINFOSEC-72118', 'GINFOSEC-72120'] :
+            
+                current_status = jiraticket['fields']['status']['name']
+                reopened = False
+                # If it's not opened, let's reopen it
+                if (str(current_status).lower() in self.jiraparams.closedstatus) :
+                    if self.jiraparams.opentransition :
+                        try :
+                            retdata = self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
+                        except HTTPError as e:
+                            raise Exception( self.__processjiraexception( False, False, e ) )
+                        except Exception as e:
+                            if str(e) :
+                                raise e
+                            else :
+                                raise Exception( 'Error transitioning jira ticket' )
+                        
+                        reopened = True
+                    else :
+                        cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
+                # Check if description changed
+                newdescription = None
+                if description and (not description == jiraticket['fields'].get('description')) :
+                    newdescription = description
+                # Check if priority changed
+                newpriority = None
+                ticketpriority = None
+                if jiraticket['fields'].get('priority') :
+                    ticketpriority = jiraticket['fields']['priority'].get('name')
+                if priority and (not priority == ticketpriority) :
+                    newpriority = priority
+                # Check if labels changed
+                newlabels   = []
+                existinglabels = jiraticket['fields'].get('labels')
+                if not existinglabels :
+                    existinglabels = []
+                for label in labels :
+                    found = next( filter( lambda el: el == label, existinglabels), None )
+                    if not found :
+                        newlabels.append(label)
+                if len(newlabels) == 0 :
+                    newlabels = None
+                # Check fields
+                if len(fields) == 0 :
+                    fields = None
+                    
+                if newdescription or newpriority or newlabels or fields :
                     try :
-                        retdata = self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
+                        self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
                     except HTTPError as e:
                         raise Exception( self.__processjiraexception( False, False, e ) )
                     except Exception as e:
                         if str(e) :
                             raise e
                         else :
-                            raise Exception( 'Error transitioning jira ticket' )
-                    
-                    reopened = True
-                else :
-                    cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
-            # Check if description changed
-            newdescription = None
-            if description and (not description == jiraticket['fields'].get('description')) :
-                newdescription = description
-            # Check if priority changed
-            newpriority = None
-            ticketpriority = None
-            if jiraticket['fields'].get('priority') :
-                ticketpriority = jiraticket['fields']['priority'].get('name')
-            if priority and (not priority == ticketpriority) :
-                newpriority = priority
-            # Check if labels changed
-            newlabels   = []
-            existinglabels = jiraticket['fields'].get('labels')
-            if not existinglabels :
-                existinglabels = []
-            for label in labels :
-                found = next( filter( lambda el: el == label, existinglabels), None )
-                if not found :
-                    newlabels.append(label)
-            if len(newlabels) == 0 :
-                newlabels = None
-            # Check fields
-            if len(fields) == 0 :
-                fields = None
-                
-            if newdescription or newpriority or newlabels or fields :
-                try :
-                    self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
-                except HTTPError as e:
-                    raise Exception( self.__processjiraexception( False, False, e ) )
-                except Exception as e:
-                    if str(e) :
-                        raise e
-                    else :
-                        raise Exception( 'Error updating jira ticket' )
+                            raise Exception( 'Error updating jira ticket' )
+            # <<< TEMP CONDITION TO REMOVE
 
             if reopened :
                 cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', prev status "' + current_status + '", with key "' + ticketsummary + '"' )
