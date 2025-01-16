@@ -1104,64 +1104,60 @@ class jirafeedback(basefeedback) :
         
             ticketkey = jiraticket.get('key')
             
-            # >>> TEMP CONDITION TO REMOVE
-            if ticketkey in ['GINFOSEC-75333', 'GINFOSEC-72118', 'GINFOSEC-72120'] :
-            
-                current_status = jiraticket['fields']['status']['name']
-                reopened = False
-                # If it's not opened, let's reopen it
-                if (str(current_status).lower() in self.jiraparams.closedstatus) :
-                    if self.jiraparams.opentransition :
-                        try :
-                            retdata = self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
-                        except HTTPError as e:
-                            raise Exception( self.__processjiraexception( False, False, e ) )
-                        except Exception as e:
-                            if str(e) :
-                                raise e
-                            else :
-                                raise Exception( 'Error transitioning jira ticket' )
-                        
-                        reopened = True
-                    else :
-                        cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
-                # Check if description changed
-                newdescription = None
-                if description and (not description == jiraticket['fields'].get('description')) :
-                    newdescription = description
-                # Check if priority changed
-                newpriority = None
-                ticketpriority = None
-                if jiraticket['fields'].get('priority') :
-                    ticketpriority = jiraticket['fields']['priority'].get('name')
-                if priority and (not priority == ticketpriority) :
-                    newpriority = priority
-                # Check if labels changed
-                newlabels   = []
-                existinglabels = jiraticket['fields'].get('labels')
-                if not existinglabels :
-                    existinglabels = []
-                for label in labels :
-                    found = next( filter( lambda el: el == label, existinglabels), None )
-                    if not found :
-                        newlabels.append(label)
-                if len(newlabels) == 0 :
-                    newlabels = None
-                # Check fields
-                if len(fields) == 0 :
-                    fields = None
-                    
-                if newdescription or newpriority or newlabels or fields :
+            current_status = jiraticket['fields']['status']['name']
+            reopened = False
+            # If it's not opened, let's reopen it
+            if (str(current_status).lower() in self.jiraparams.closedstatus) :
+                if self.jiraparams.opentransition :
                     try :
-                        self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
+                        retdata = self.jira.tickettransition( ticketkey, self.jiraparams.opentransition )
                     except HTTPError as e:
                         raise Exception( self.__processjiraexception( False, False, e ) )
                     except Exception as e:
                         if str(e) :
                             raise e
                         else :
-                            raise Exception( 'Error updating jira ticket' )
-            # <<< TEMP CONDITION TO REMOVE
+                            raise Exception( 'Error transitioning jira ticket' )
+                    
+                    reopened = True
+                else :
+                    cxlogger.logwarning( 'Open transtion missing. Cannot reopen "' + str(ticketkey) + '"' )
+            # Check if description changed
+            newdescription = None
+            if description and (not description == jiraticket['fields'].get('description')) :
+                newdescription = description
+            # Check if priority changed
+            newpriority = None
+            ticketpriority = None
+            if jiraticket['fields'].get('priority') :
+                ticketpriority = jiraticket['fields']['priority'].get('name')
+            if priority and (not priority == ticketpriority) :
+                newpriority = priority
+            # Check if labels changed
+            newlabels   = []
+            existinglabels = jiraticket['fields'].get('labels')
+            if not existinglabels :
+                existinglabels = []
+            for label in labels :
+                found = next( filter( lambda el: el == label, existinglabels), None )
+                if not found :
+                    newlabels.append(label)
+            if len(newlabels) == 0 :
+                newlabels = None
+            # Check fields
+            if len(fields) == 0 :
+                fields = None
+                
+            if newdescription or newpriority or newlabels or fields :
+                try :
+                    self.jira.projecteditissue( ticketkey, newdescription, fields, newlabels, newpriority )
+                except HTTPError as e:
+                    raise Exception( self.__processjiraexception( False, False, e ) )
+                except Exception as e:
+                    if str(e) :
+                        raise e
+                    else :
+                        raise Exception( 'Error updating jira ticket' )
 
             if reopened :
                 cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', prev status "' + current_status + '", with key "' + ticketsummary + '"' )
