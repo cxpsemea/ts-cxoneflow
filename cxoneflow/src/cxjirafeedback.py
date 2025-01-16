@@ -1101,14 +1101,14 @@ class jirafeedback(basefeedback) :
             # Add to CREATED
             cxlogger.verbose( '- JIRA issue ' + jiraticket.get('key') + ' created, type ' + scanner.upper() + ', with key "' + ticketsummary + '"' )
         else :
+            reopened = False
         
             ticketkey = jiraticket.get('key')
+            current_status = jiraticket['fields']['status']['name']
             
             # >>> TEMP CONDITION TO REMOVE
-            if ticketkey in ['GINFOSEC-75333', 'GINFOSEC-72118', 'GINFOSEC-72120'] :
+            if ticketkey in ['GINFOSEC-75333', 'GINFOSEC-72118', 'GINFOSEC-72120'] :            
             
-                current_status = jiraticket['fields']['status']['name']
-                reopened = False
                 # If it's not opened, let's reopen it
                 if (str(current_status).lower() in self.jiraparams.closedstatus) :
                     if self.jiraparams.opentransition :
@@ -1161,7 +1161,6 @@ class jirafeedback(basefeedback) :
                             raise e
                         else :
                             raise Exception( 'Error updating jira ticket' )
-            # <<< TEMP CONDITION TO REMOVE
 
             if reopened :
                 cxlogger.verbose( '- JIRA issue ' + ticketkey + ' re-opened, type ' + scanner.upper() + ', prev status "' + current_status + '", with key "' + ticketsummary + '"' )
