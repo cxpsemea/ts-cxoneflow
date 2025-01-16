@@ -54,15 +54,25 @@ class cxprocessor(baserunner) :
 
     # Get scan information, wait for completion
     def __getscandata(self, scanid: str, waitforit: bool = True ) :
+        go: bool = True
         # Get scan and status. Error is thrown if scan does not exists
         scan = self.conn.cxone.get( '/api/scans/' + scanid )
-        while scan['status'] != 'Completed' and waitforit :
+        scanstatus = str(scan['status']).lower()
+        # while scan['status'] != 'Completed' and waitforit :
+        while scanstatus not in ['completed', 'failed', 'partial', 'canceled'] and waitforit :
             # 30 seconds
             time.sleep(30.0)
             scan = self.conn.cxone.get( '/api/scans/' + scanid )
+            scanstatus = str(scan['status']).lower()
+        if scanstatus in ['failed', 'canceled'] :
+            go = False 
+            cxlogger.verbose( 'Aborted processing ' + scanstatus + ' scan' )
+        elif scanstatus == 'partial' :
+            cxlogger.verbose( 'Processing a ' + scanstatus + ' scan' )
         # Get associated project data
         project = self.conn.cxone.get( '/api/projects/' + scan['projectId'] )
         self.__scan.updatescandata( scan, project )
+        return go
     
     
     # Check branch name and scanners for processing go/no-go
@@ -278,9 +288,10 @@ class cxprocessor(baserunner) :
 
         self.__allcounter = 0
         
-        self.__getscandata( self.cxparams.scanid )
+        go = self.__getscandata( self.cxparams.scanid )
 
-        go = self.__checkscandata()
+        if go :
+            go = self.__checkscandata()
         
         if go :
             
