@@ -116,14 +116,14 @@ class cxoneflow(baserunner) :
                 errorcount += 1
                 # In case of connection failure, verbose the parameters
                 cxlogger.verbose('Failed connecting to CXONE, with parameters:' )
-                cxlogger.verbose('  cxone.url: ' + (cxone_url if cxone_url else '<unset>') )
-                cxlogger.verbose('  cxone.acl: ' + (cxone_acl if cxone_acl else '<unset>') )
-                cxlogger.verbose('  cxone.tenant: ' + (cxone_tenant if cxone_tenant else '<unset>') )
-                cxlogger.verbose('  cxone.granttype: ' + (cxone_granttype if cxone_granttype else '<unset>') )
-                cxlogger.verbose('  cxone.clientid: ' + (cxone_clientid if cxone_clientid else '<unset>') )
+                cxlogger.verbose('  cxone.url: ' + (str(cxone_url) if cxone_url else '<unset>') )
+                cxlogger.verbose('  cxone.acl: ' + (str(cxone_acl) if cxone_acl else '<unset>') )
+                cxlogger.verbose('  cxone.tenant: ' + (str(cxone_tenant) if cxone_tenant else '<unset>') )
+                cxlogger.verbose('  cxone.granttype: ' + (str(cxone_granttype) if cxone_granttype else '<unset>') )
+                cxlogger.verbose('  cxone.clientid: ' + (str(cxone_clientid) if cxone_clientid else '<unset>') )
                 cxlogger.verbose('  cxone.apikey: ' + ('*****' if cxone_apikey else '<unset>') )
-                cxlogger.verbose('  cxone.proxy_url: ' + (self.config.value('cxone.proxy_url') if self.config.value('cxone.proxy_url') else '<unset>') )
-                cxlogger.verbose('  cxone.proxy_username: ' + (self.config.value('cxone.proxy_username') if self.config.value('cxone.proxy_username') else '<unset>') )
+                cxlogger.verbose('  cxone.proxy_url: ' + (str(self.config.value('cxone.proxy_url')) if self.config.value('cxone.proxy_url') else '<unset>') )
+                cxlogger.verbose('  cxone.proxy_username: ' + (str(self.config.value('cxone.proxy_username')) if self.config.value('cxone.proxy_username') else '<unset>') )
                 cxlogger.verbose('  cxone.proxy_password: ' + ('*****' if self.config.value('cxone.proxy_password') else '<unset>') )
                 raise Exception( 'Failed connecting to CXONE with "' + str(e) + '"', True, True, e )
             # Check if THIS user has the required permissions
