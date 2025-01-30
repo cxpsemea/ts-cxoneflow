@@ -65,8 +65,22 @@ class jirafeedback(basefeedback) :
             cxlogger.logerror( 'Unable to connect to JIRA at "' + self.jiraparams.url + '"', e )
             raise Exception( 'Unable to connect to JIRA at "' + self.jiraparams.url + '"' )
         
-        # Get jira project using key
-        project = self.jira.project( self.jiraparams.project )
+        # Get jira project using key, it may fail in case of wrong login or permissions
+        try :
+            project = self.jira.project( self.jiraparams.project )
+        except Exception as e :
+            cxlogger.verbose('Failed obtaining JIRA project, with parameters:' )
+            cxlogger.verbose('  jira.project: ' + (str(self.jiraparams.project) if self.jiraparams.project else '<unset>') )
+            cxlogger.verbose('  jira.url: ' + (str(self.jiraparams.url) if self.jiraparams.url else '<unset>') )
+            cxlogger.verbose('  jira.username: ' + (str(self.jiraparams.username) if self.jiraparams.username else '<unset>') )
+            cxlogger.verbose('  jira.token: ' + ('*****' if self.jiraparams.token else '<unset>') )
+            cxlogger.verbose('  jira.iscloud: ' + ('true' if self.jiraparams.cloud else '') )
+            cxlogger.verbose('  jira.verifyssl: ' + ('true' if self.jiraparams.verify_ssl else '') )
+            cxlogger.verbose('  jira.timeout: ' + (str(self.jiraparams.httptimeout) if self.jiraparams.httptimeout else '<unset>') )
+            cxlogger.verbose('  jira.proxy_url: ' + (str(self.jiraparams.proxy_url) if self.jiraparams.proxy_url else '<unset>') )
+            cxlogger.verbose('  jira.proxy_username: ' + (str(self.jiraparams.proxyuser) if self.jiraparams.proxyuser else '<unset>') )
+            cxlogger.verbose('  jira.proxy_password: ' + ('*****' if self.jiraparams.proxypass else '<unset>') )
+            raise e
         self.jiraparams.projectid = project['id'] 
 
         # Get jira issue type for the project
