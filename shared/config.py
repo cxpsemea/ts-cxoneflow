@@ -70,9 +70,14 @@ class config(object) :
                 self.__filename = fileorpath
         else :
             # Do we have a --config-file command line argument ?
-            configfile = self.__command_arg('config-file' )
+            configfile = self.__command_arg('config-file')
             if configfile :
                 path = configfile
+                # Check for relative path ...
+                if not ( path.startswith('/') or path.startswith('\\') or (path.find(':\\') > 0) or (path.find(':/') > 0) ) :
+                    if path.startswith('./') or path.startswith('.\\') :
+                        path = path[2: ]
+                    path = os.path.join(self.mainrootpath(), path)
                 if (not path) or (not os.path.exists(path)) :
                     raise FileNotFoundError( errno.ENOENT, 'Configuration file or path was not found', path)
                 if os.path.isfile(path) :
@@ -83,7 +88,7 @@ class config(object) :
                 
         # Do we have a --logs-folder command line argument ?
         if not self.__logsfolder :
-            self.__logsfolder = self.__command_arg('logs-folder' )
+            self.__logsfolder = self.__command_arg('logs-folder')
             if self.__logsfolder :
                 self.__logsfolder = os.path.abspath(self.__logsfolder)
                 
@@ -185,6 +190,7 @@ class config(object) :
     def __command_arg(self, argname) :
         if not argname :
             return None
+        keyfound: bool = False
         lastkey = ''
         args = sys.argv[1:]
         for arg in args :
@@ -200,8 +206,10 @@ class config(object) :
                 # Remove initial "-" or "--"
                 lastkey = nkey.lstrip('-')
                 if lastkey.lower() == argname.lower() :
-                    return nval
-            else :
+                    keyfound = True
+                    if nval :
+                        return nval
+            elif keyfound :
                 if lastkey.lower() == argname.lower() :
                     return arg
         return None
