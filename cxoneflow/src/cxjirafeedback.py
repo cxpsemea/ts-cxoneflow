@@ -1140,13 +1140,14 @@ class jirafeedback(basefeedback) :
             newdescription = None
             if description and (not description == jiraticket['fields'].get('description')) :
                 newdescription = description
-            # Check if priority changed
+            # Check if priority changed and shall be updated
             newpriority = None
-            ticketpriority = None
-            if jiraticket['fields'].get('priority') :
-                ticketpriority = jiraticket['fields']['priority'].get('name')
-            if priority and (not priority == ticketpriority) :
-                newpriority = priority
+            if not ( self.jiraparams.priorityupdatemode == 'creation' or (self.jiraparams.priorityupdatemode == 'opening' and reopened) ) :
+                ticketpriority = None
+                if jiraticket['fields'].get('priority') :
+                    ticketpriority = jiraticket['fields']['priority'].get('name')
+                if priority and (not priority == ticketpriority) :
+                    newpriority = priority
             # Check if labels changed
             newlabels   = []
             existinglabels = jiraticket['fields'].get('labels')

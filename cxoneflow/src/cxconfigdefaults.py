@@ -94,6 +94,7 @@ cxconfigdefaults = {
             "Low": "Low",
             "Informational": "Lowest"
         },
+        "priority-update-mode": None,
         "open-transition": "In Progress",
         "close-transition": "Done",
         "open-status": [ "To Do", "Backlog", "Selected for Development", "In Progress" ],
