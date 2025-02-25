@@ -59,6 +59,14 @@ class jiraproperties(object) :
             self.priorities['INFO'] = config.value( 'jira.priorities.Informational' )
         elif config.haskey('jira.priorities.Info') :
             self.priorities['INFO'] = config.value( 'jira.priorities.Info' )
+        # Check priority update mode from configuration
+        self.priorityupdatemode             = None      # None=standard, creation, opening
+        pupdatemode = config.value( 'jira.priority-update-mode' )
+        if pupdatemode and isinstance(pupdatemode, str):
+            if pupdatemode.lower() in ['creation', 'create', 'creating'] :
+                self.priorityupdatemode = 'creation'
+            elif pupdatemode.lower() in ['opening', 'open', 'reopen'] :
+                self.priorityupdatemode = 'opening'
         self.opentransition                 = config.value( 'jira.open-transition' )
         self.closetransition                = config.value( 'jira.close-transition' )
         self.openstatus                     = []
